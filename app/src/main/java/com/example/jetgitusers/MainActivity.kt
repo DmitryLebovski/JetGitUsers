@@ -80,7 +80,13 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable(PROFILE_SCREEN) {
-                                ProfileScreen()
+                                ProfileScreen(
+                                    navigate = {
+                                        navController.navigate(LOGIN_SCREEN) {
+                                            popUpTo(PROFILE_SCREEN) { inclusive = true }
+                                        }
+                                    }
+                                )
                             }
                         }
                     }

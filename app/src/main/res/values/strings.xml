@@ -6,4 +6,5 @@
     <string name="users_button">Users</string>
     <string name="extra_task_button">Extra Task</string>
     <string name="profile_button">Me</string>
+    <string name="github_emoji">github</string>
 </resources>

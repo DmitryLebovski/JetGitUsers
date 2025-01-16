@@ -36,7 +36,7 @@ fun LoginScreen(
 ) {
     var text by rememberSaveable { mutableStateOf("") }
 
-    var elementsPadding = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+    val elementsPadding = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
 
     Column (
         modifier = Modifier

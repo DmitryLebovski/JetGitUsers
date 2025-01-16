@@ -2,23 +2,82 @@ package com.example.jetgitusers.presentation.profile_screen
 
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.jetgitusers.R
 
 @Composable
 
-fun ProfileScreen() {
+fun ProfileScreen(
+    navigate: () -> Unit
+) {
     Column (
         modifier = Modifier
             .fillMaxSize()
-            .background(color = colorResource(R.color.light_grey))
-
+            .background(color = colorResource(R.color.light_grey)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
+        Image(
+            painter = painterResource(R.drawable.github_placeholder),
+            contentDescription = "Profile Picture",
+            modifier = Modifier
+                .width(200.dp)
+                .height(200.dp)
+                .clip(CircleShape)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
+        Text(
+            text = "My login",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = FontFamily(Font(R.font.montserrat_regular),
+            )
+        )
+        Text(
+            text = "20 followers",
+            fontFamily = FontFamily(Font(R.font.montserrat_regular))
+        )
+        Text(
+            text = "10 repositories",
+            fontFamily = FontFamily(Font(R.font.montserrat_regular))
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextButton(
+            onClick = navigate
+        ) {
+            Text(
+                text = "Log Out",
+                fontFamily = FontFamily(Font(R.font.montserrat_regular)),
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color.Red
+            )
+        }
     }
 }
