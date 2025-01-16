@@ -13,7 +13,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.res.colorResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -24,7 +23,6 @@ import com.example.jetgitusers.presentation.login_screen.LoginScreen
 import com.example.jetgitusers.presentation.profile_screen.ProfileScreen
 import com.example.jetgitusers.presentation.splash_screen.SplashScreen
 import com.example.jetgitusers.presentation.users_screen.UsersScreen
-import com.example.jetgitusers.utils.Routes
 import com.example.jetgitusers.utils.Routes.LOGIN_SCREEN
 import com.example.jetgitusers.utils.Routes.PROFILE_SCREEN
 import com.example.jetgitusers.utils.Routes.SPLASH_SCREEN

@@ -1,6 +1,5 @@
 package com.example.jetgitusers.presentation.login_screen
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
