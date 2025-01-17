@@ -10,6 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -19,6 +24,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.jetgitusers.tools.BottomBar
 import com.example.jetgitusers.ui.theme.JetGitUsersTheme
 import androidx.navigation.compose.composable
+import com.example.jetgitusers.data.DataStoreManager
+import com.example.jetgitusers.domain.model.User
 import com.example.jetgitusers.presentation.login_screen.LoginScreen
 import com.example.jetgitusers.presentation.profile_screen.ProfileScreen
 import com.example.jetgitusers.presentation.splash_screen.SplashScreen
@@ -27,12 +34,16 @@ import com.example.jetgitusers.utils.Routes.LOGIN_SCREEN
 import com.example.jetgitusers.utils.Routes.PROFILE_SCREEN
 import com.example.jetgitusers.utils.Routes.SPLASH_SCREEN
 import com.example.jetgitusers.utils.Routes.USERS_SCREEN
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.light(Color.Transparent.toArgb(), Color.Transparent.toArgb()))
         setContent {
+            val token by DataStoreManager.getToken(applicationContext).collectAsState(initial = null)
+
             JetGitUsersTheme {
                 Surface (
                     modifier = Modifier
@@ -87,9 +98,12 @@ class MainActivity : ComponentActivity() {
 
                             composable(PROFILE_SCREEN) {
                                 ProfileScreen(
+                                    token = token.toString(),
                                     navigate = {
                                         navController.navigate(LOGIN_SCREEN) {
-                                            popUpTo(PROFILE_SCREEN) { inclusive = true }
+                                            popUpTo(0) { inclusive = true }
+                                            launchSingleTop = true
+                                            restoreState = false
                                         }
                                     }
                                 )

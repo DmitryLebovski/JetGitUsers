@@ -12,4 +12,5 @@
     <string name="followers_placeholder">%1$s followers</string>
     <string name="repositories_placeholder">%1$s repositories</string>
     <string name="log_out">Log Out</string>
+    <string name="loading_failed">No internet connection</string>
 </resources>

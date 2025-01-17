@@ -1,4 +1,4 @@
-package com.example.jetgitusers.data.remote
+package com.example.jetgitusers.data
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit

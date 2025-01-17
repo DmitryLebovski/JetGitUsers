@@ -7,7 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.example.jetgitusers.data.remote.DataStoreManager
+import com.example.jetgitusers.data.DataStoreManager
 
 import com.example.jetgitusers.reusable_components.GithubCard
 import kotlinx.coroutines.delay
