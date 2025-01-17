@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +30,7 @@ import com.example.jetgitusers.R
 
 @Composable
 fun UserCard(
-    login: String = "User Login",
+    login: String = stringResource(R.string.username_placeholder),
     followers: Int = 20
 ) {
     Card(

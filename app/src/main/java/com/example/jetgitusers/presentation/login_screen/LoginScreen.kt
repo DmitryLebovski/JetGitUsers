@@ -35,7 +35,9 @@ fun LoginScreen(
 ) {
     var text by rememberSaveable { mutableStateOf("") }
 
-    val elementsPadding = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+    val elementsPadding = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp)
 
     Column (
         modifier = Modifier
@@ -87,7 +89,7 @@ fun LoginScreen(
                 modifier = elementsPadding
             ) {
                 Text(
-                    text = "Sign In",
+                    text = stringResource(R.string.sign_in),
                     textAlign = TextAlign.Center,
                     fontFamily = FontFamily(Font(R.font.montserrat_regular)),
                     fontWeight = FontWeight.Bold,

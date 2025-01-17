@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +31,7 @@ import com.example.jetgitusers.R
 fun ProfileScreen(
     navigate: () -> Unit
 ) {
+    val i = 0 // TODO
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -48,18 +50,18 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "My login",
+            text = stringResource(R.string.username_placeholder),
             fontSize = 28.sp,
             fontWeight = FontWeight.SemiBold,
             fontFamily = FontFamily(Font(R.font.montserrat_regular),
             )
         )
         Text(
-            text = "20 followers",
+            text = stringResource(R.string.followers_placeholder, i),
             fontFamily = FontFamily(Font(R.font.montserrat_regular))
         )
         Text(
-            text = "10 repositories",
+            text = stringResource(R.string.repositories_placeholder, i),
             fontFamily = FontFamily(Font(R.font.montserrat_regular))
         )
 
@@ -69,7 +71,7 @@ fun ProfileScreen(
             onClick = navigate
         ) {
             Text(
-                text = "Log Out",
+                text = stringResource(R.string.log_out),
                 fontFamily = FontFamily(Font(R.font.montserrat_regular)),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
