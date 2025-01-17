@@ -56,11 +56,19 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(paddingValues)
                         ) {
                             composable(SPLASH_SCREEN) {
-                                SplashScreen {
-                                    navController.navigate(LOGIN_SCREEN) {
-                                        popUpTo(SPLASH_SCREEN) { inclusive = true }
+                                SplashScreen (
+                                    navigate = { hasToken ->
+                                        if (hasToken) {
+                                            navController.navigate(USERS_SCREEN) {
+                                                popUpTo(SPLASH_SCREEN) { inclusive = true }
+                                            }
+                                        } else {
+                                            navController.navigate(LOGIN_SCREEN) {
+                                                popUpTo(SPLASH_SCREEN) { inclusive = true }
+                                            }
+                                        }
                                     }
-                                }
+                                )
                             }
 
                             composable(LOGIN_SCREEN) {

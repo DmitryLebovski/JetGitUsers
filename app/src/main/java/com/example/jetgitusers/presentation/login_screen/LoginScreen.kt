@@ -1,5 +1,6 @@
 package com.example.jetgitusers.presentation.login_screen
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,9 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
@@ -26,14 +30,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.jetgitusers.R
+import com.example.jetgitusers.data.remote.DataStoreManager
 import com.example.jetgitusers.reusable_components.GithubCard
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 @Composable
 
 fun LoginScreen(
     navigate: () -> Unit
 ) {
-    var text by rememberSaveable { mutableStateOf("") }
+    val context = LocalContext.current
+    var token by remember { mutableStateOf("") }
 
     val elementsPadding = Modifier
         .fillMaxWidth()
@@ -61,11 +71,12 @@ fun LoginScreen(
             Spacer(modifier = Modifier.padding(4.dp))
 
             OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
+                value = token,
+                onValueChange = { token = it },
                 singleLine = true,
                 placeholder = { Text(
                     text = stringResource(R.string.token_placeholder),
+                    color = Color.LightGray,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily(Font(R.font.montserrat_regular),
                     )
@@ -80,8 +91,14 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    navigate()
-                    text = ""
+                    if (token.isNotEmpty()) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            DataStoreManager.saveToken(context, token)
+                        }
+                        navigate()
+                    } else {
+                        Toast.makeText(context, "Token is empty", Toast.LENGTH_LONG).show()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorResource(R.color.dark_grey)

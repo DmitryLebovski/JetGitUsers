@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -25,12 +26,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.jetgitusers.R
+import com.example.jetgitusers.data.remote.DataStoreManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 
 fun ProfileScreen(
     navigate: () -> Unit
 ) {
+    val context = LocalContext.current
+
     val i = 0 // TODO
     Column (
         modifier = Modifier
@@ -68,7 +75,12 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         TextButton(
-            onClick = navigate
+            onClick =  {
+                CoroutineScope(Dispatchers.IO).launch {
+                    DataStoreManager.clearToken(context)
+                }
+                navigate()
+            }
         ) {
             Text(
                 text = stringResource(R.string.log_out),
