@@ -4,7 +4,7 @@
     <string name="token">Token</string>
     <string name="token_placeholder">github_pat_…</string>
     <string name="users_button">Users</string>
-    <string name="extra_task_button">Extra Task</string>
+    <string name="extra_task_button">Activity</string>
     <string name="profile_button">Me</string>
     <string name="github_emoji">github</string>
     <string name="sign_in">Sign In</string>
