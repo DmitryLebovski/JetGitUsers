@@ -43,7 +43,9 @@ fun BottomBarNavigation(
                         getColor(context, R.color.white)
                     )
                 )
-                UsersScreen()
+                UsersScreen(
+                    token = token.toString()
+                )
             }
 
             composable(PROFILE_SCREEN) {
