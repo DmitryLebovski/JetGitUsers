@@ -16,4 +16,8 @@
     <string name="users_icon">\uF039</string>
     <string name="activity_icon">\uF5F8</string>
     <string name="account_icon">\uF007</string>
+    <string name="checking">Checking...</string>
+    <string name="user_not_found">User not found!</string>
+    <string name="token_is_empty">Token is empty</string>
+    <string name="wrong_token_pattern">Wrong token pattern!</string>
 </resources>

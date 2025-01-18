@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,8 +32,6 @@ class UsersViewModel @Inject constructor(
                 val usersList = repository.getUsers(token)
                 _users.value = usersList
                 usersUiState = UsersUiState.Success
-            } catch (e: IOException) {
-                usersUiState = UsersUiState.Error
             } catch (e: HttpException) {
                 usersUiState = UsersUiState.Error
             }

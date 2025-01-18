@@ -1,6 +1,5 @@
 package com.example.jetgitusers.presentation.profile_screen
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,10 +28,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
 import com.example.jetgitusers.R
 import com.example.jetgitusers.data.DataStoreManager
-import com.example.jetgitusers.presentation.login_screen.ErrorScreen
 import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.utils.UsersUiState
 import kotlinx.coroutines.CoroutineScope
@@ -62,14 +60,16 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(user.avatar_url),
+                AsyncImage(
+                    model = user.avatar_url,
+                    placeholder = painterResource(R.drawable.github_placeholder),
                     contentDescription = "Profile Picture",
                     modifier = Modifier
                         .width(200.dp)
                         .height(200.dp)
                         .clip(CircleShape)
                 )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(

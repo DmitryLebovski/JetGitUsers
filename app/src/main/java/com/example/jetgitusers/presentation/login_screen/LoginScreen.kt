@@ -18,6 +18,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,15 +37,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.getColor
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetgitusers.R
 import com.example.jetgitusers.data.DataStoreManager
 import com.example.jetgitusers.reusable_components.GithubCard
 import com.example.jetgitusers.utils.UsersUiState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -55,104 +52,106 @@ fun LoginScreen(
     var token by remember { mutableStateOf("") }
     val user by viewModel.user.collectAsState()
     val uiState = viewModel.usersUiState
+    var isToastShown by remember { mutableStateOf(false) }
 
-//    LaunchedEffect(key1 = token) {
-//        viewModel.checkUserExist(token)
-//    }
+    when(uiState) {
+        UsersUiState.Success -> {
+            LaunchedEffect(Unit) {
+                DataStoreManager.saveToken(context, token)
+                navigate()
+            }
+        }
+
+        UsersUiState.Loading -> {
+        }
+
+        UsersUiState.Error -> {
+            if (!isToastShown) {
+                Toast.makeText(context, stringResource(R.string.user_not_found), Toast.LENGTH_LONG)
+                    .show()
+                isToastShown = true
+            }
+        }
+    }
 
     val elementsPadding = Modifier
         .fillMaxWidth()
         .padding(horizontal = 16.dp)
 
-    when (uiState) {
-        UsersUiState.Success -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                Spacer(modifier = Modifier.padding(24.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Spacer(modifier = Modifier.padding(24.dp))
 
-                GithubCard(16, 2, Modifier.fillMaxWidth())
+        GithubCard(16, 2, Modifier.fillMaxWidth())
 
-                Spacer(modifier = Modifier.padding(24.dp))
+        Spacer(modifier = Modifier.padding(24.dp))
 
-                Column {
+        Column {
+            Text(
+                text = stringResource(R.string.token),
+                fontFamily = FontFamily(Font(R.font.montserrat_regular)),
+                fontWeight = FontWeight.Normal,
+                fontSize = 20.sp,
+                modifier = elementsPadding
+            )
+
+            Spacer(modifier = Modifier.padding(4.dp))
+
+            OutlinedTextField(
+                value = token,
+                onValueChange = {
+                    token = it
+                                },
+                singleLine = true,
+                placeholder = {
                     Text(
-                        text = stringResource(R.string.token),
-                        fontFamily = FontFamily(Font(R.font.montserrat_regular)),
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 20.sp,
-                        modifier = elementsPadding
-                    )
-
-                    Spacer(modifier = Modifier.padding(4.dp))
-
-                    OutlinedTextField(
-                        value = token,
-                        onValueChange = { token = it },
-                        singleLine = true,
-                        placeholder = {
-                            Text(
-                                text = stringResource(R.string.token_placeholder),
-                                color = Color.LightGray,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily(
-                                    Font(R.font.montserrat_regular),
-                                )
-                            )
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = colorResource(R.color.dark_grey)
-                        ),
-                        modifier = elementsPadding
-                    )
-
-                    Spacer(modifier = Modifier.padding(8.dp))
-
-                    Button(
-                        onClick = {
-                            if (token.isNotEmpty()) {
-                                viewModel.checkUserExist(token)
-                                Log.d("CHECK_TOKEN", token)
-                                Log.d("CHECK_TOKEN", user.toString())
-                                if (user.id != 0 && uiState == UsersUiState.Success) {
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        DataStoreManager.saveToken(context, token)
-                                    }
-                                    navigate()
-                                } else {
-                                    Toast.makeText(context, "User doesn't exist", Toast.LENGTH_LONG)
-                                        .show()
-                                }
-                            } else {
-                                Toast.makeText(context, "Token is empty", Toast.LENGTH_LONG).show()
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorResource(R.color.dark_grey)
-                        ),
-                        modifier = elementsPadding
-                    ) {
-                        Text(
-                            text = stringResource(R.string.sign_in),
-                            textAlign = TextAlign.Center,
-                            fontFamily = FontFamily(Font(R.font.montserrat_regular)),
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(20.dp)
+                        text = stringResource(R.string.token_placeholder),
+                        color = Color.LightGray,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily(
+                            Font(R.font.montserrat_regular),
                         )
-                    }
-                }
-            }
-        }
-        UsersUiState.Loading -> {
-            LoadingScreen()
-        }
+                    )
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = colorResource(R.color.dark_grey)
+                ),
+                modifier = elementsPadding
+            )
 
-        UsersUiState.Error -> {
-            ErrorScreen()
+            Spacer(modifier = Modifier.padding(8.dp))
+
+            Button(
+                onClick = {
+                    if (token.isNotEmpty()) {
+                        isToastShown = false
+                        viewModel.checkUserExist(token)
+                        Log.d("CHECK_TOKEN", token)
+                        Log.d("CHECK_TOKEN", user.toString())
+                        Log.d("CHECK_TOKEN", uiState.toString())
+                    } else {
+                        Toast.makeText(context,
+                            context.getString(R.string.token_is_empty), Toast.LENGTH_LONG).show()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(R.color.dark_grey)
+                ),
+                modifier = elementsPadding
+            ) {
+                Text(
+                    text = stringResource(R.string.sign_in),
+                    textAlign = TextAlign.Center,
+                    fontFamily = FontFamily(Font(R.font.montserrat_regular)),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(20.dp)
+                )
+            }
         }
     }
 }

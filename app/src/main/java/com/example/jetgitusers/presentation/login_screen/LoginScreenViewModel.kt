@@ -22,7 +22,7 @@ class LoginScreenViewModel @Inject constructor(
     private val repository: UserRepository
 ) : ViewModel() {
 
-    var usersUiState: UsersUiState by mutableStateOf(UsersUiState.Success)
+    var usersUiState: UsersUiState by mutableStateOf(UsersUiState.Loading)
         private set
 
     private val _user = MutableStateFlow(
@@ -41,15 +41,17 @@ class LoginScreenViewModel @Inject constructor(
 
     fun checkUserExist(token: String) {
         viewModelScope.launch {
-            usersUiState = UsersUiState.Loading
             try {
+                usersUiState = UsersUiState.Loading
                 val userInfo = repository.getAuthorizedUser(token)
                 Log.d("API_RESPONSE", userInfo.toString())
-                _user.value = userInfo
+                _user.emit(userInfo)
                 usersUiState = UsersUiState.Success
+            } catch (e: HttpException) {
+                usersUiState = UsersUiState.Error
             } catch (e: IOException) {
                 usersUiState = UsersUiState.Error
-            } catch (e: HttpException) {
+            } catch (e: IllegalArgumentException) {
                 usersUiState = UsersUiState.Error
             }
         }

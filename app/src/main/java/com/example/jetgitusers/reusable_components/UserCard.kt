@@ -18,13 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
 import com.example.jetgitusers.R
 
 @Composable
@@ -43,8 +44,9 @@ fun UserCard(
         )
     ) {
         Row {
-            Image(
-                painter = rememberAsyncImagePainter(avatarUrl),
+            AsyncImage(
+                model = avatarUrl,
+                placeholder = painterResource(R.drawable.github_placeholder),
                 contentDescription = "Profile Picture",
                 modifier = Modifier
                     .fillMaxHeight()
