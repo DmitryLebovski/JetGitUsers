@@ -13,4 +13,7 @@
     <string name="repositories_placeholder">%1$s repositories</string>
     <string name="log_out">Log Out</string>
     <string name="loading_failed">No internet connection</string>
+    <string name="users_icon">\uF039</string>
+    <string name="activity_icon">\uF5F8</string>
+    <string name="account_icon">\uF007</string>
 </resources>

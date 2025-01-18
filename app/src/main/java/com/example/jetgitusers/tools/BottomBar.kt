@@ -22,7 +22,7 @@ fun BottomBar(navController: NavController) {
         NavigationBarItem(
             icon = {
                 Text(
-                    text = "\uF039",
+                    text = stringResource(R.string.users_icon),
                     fontFamily = AppFont.AwesomeFont,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -37,7 +37,7 @@ fun BottomBar(navController: NavController) {
         )
         NavigationBarItem(
             icon = { Text(
-                text = "\uF5F8",
+                text = stringResource(R.string.activity_icon),
                 fontFamily = AppFont.AwesomeFont,
                 fontWeight = FontWeight.SemiBold
             ) },
@@ -51,7 +51,7 @@ fun BottomBar(navController: NavController) {
         )
         NavigationBarItem(
             icon = { Text(
-                text = "\uF007",
+                text = stringResource(R.string.account_icon),
                 fontFamily = AppFont.AwesomeFont,
                 fontWeight = FontWeight.SemiBold
             ) },

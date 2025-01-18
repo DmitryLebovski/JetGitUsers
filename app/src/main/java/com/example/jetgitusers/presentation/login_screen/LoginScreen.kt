@@ -3,6 +3,7 @@ package com.example.jetgitusers.presentation.login_screen
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.getColor
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetgitusers.R
 import com.example.jetgitusers.data.DataStoreManager
@@ -160,7 +162,8 @@ fun LoginScreen(
 fun LoadingScreen() {
     Column(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .background(color = colorResource(R.color.light_grey)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
