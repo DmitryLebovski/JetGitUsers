@@ -32,6 +32,10 @@ class UserRepositoryImpl(
         }
     }
 
+    override suspend fun getUserInfo(username: String, token: String): User {
+        return api.getUserInfo(username = username, authorization = "Bearer $token")
+    }
+
     override fun getToken(): Flow<String?> {
         return dataStore.data.map { preferences ->
             preferences[TOKEN_KEY]

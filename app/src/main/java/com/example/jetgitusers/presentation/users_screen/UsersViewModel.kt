@@ -32,7 +32,13 @@ class UsersViewModel @Inject constructor(
             usersUiState = UsersUiState.Loading
             try {
                 val usersList = repository.getUsers(token)
-                _users.value = usersList
+
+                val updatedList = usersList.map { user ->
+                    val detailedUser = repository.getUserInfo(user.login, token)
+                    user.copy(followers = detailedUser.followers)
+                }
+
+                _users.value = updatedList
                 usersUiState = UsersUiState.Success
             } catch (e: HttpException) {
                 usersUiState = UsersUiState.Error

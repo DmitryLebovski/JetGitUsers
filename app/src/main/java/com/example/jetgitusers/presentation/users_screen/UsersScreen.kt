@@ -70,7 +70,7 @@ fun UserListScreen(
             UserCard(
                 login = user.login,
                 avatarUrl = user.avatar_url,
-                followers = 0
+                followers = user.followers
             )
         }
     }

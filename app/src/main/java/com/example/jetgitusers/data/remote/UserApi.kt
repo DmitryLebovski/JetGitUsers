@@ -3,6 +3,7 @@ package com.example.jetgitusers.data.remote
 import com.example.jetgitusers.domain.model.User
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface UserApi {
@@ -20,9 +21,17 @@ interface UserApi {
         @Query("page") page: Int = 1
     ): List<User>
 
+    @GET("/users/{username}")
+    suspend fun getUserInfo(
+        @Header("Authorization") authorization: String,
+        @Header("Accept") accept: String = "application/vnd.github+json",
+        @Path("username") username: String
+    ): User
+
     @GET("/users/{username}/followers")
     suspend fun getUserFollowers(
         @Header("Authorization") authorization: String,
-        @Header("Accept") accept: String = "application/vnd.github+json"
+        @Header("Accept") accept: String = "application/vnd.github+json",
+        @Path("username") username: String
     ): User
 }
