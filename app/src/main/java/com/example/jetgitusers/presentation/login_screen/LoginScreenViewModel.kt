@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
@@ -19,7 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginScreenViewModel @Inject constructor(
-    private val repository: UserRepository
+    private val repository: UserRepository,
 ) : ViewModel() {
 
     var usersUiState: UsersUiState by mutableStateOf(UsersUiState.Loading)
@@ -47,6 +49,7 @@ class LoginScreenViewModel @Inject constructor(
                 Log.d("API_RESPONSE", userInfo.toString())
                 _user.emit(userInfo)
                 usersUiState = UsersUiState.Success
+                repository.saveToken(token)
             } catch (e: HttpException) {
                 usersUiState = UsersUiState.Error
             } catch (e: IOException) {

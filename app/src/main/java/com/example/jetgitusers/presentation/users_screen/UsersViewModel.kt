@@ -37,4 +37,6 @@ class UsersViewModel @Inject constructor(
             }
         }
     }
+
+    fun getToken() = repository.getToken()
 }

@@ -1,4 +1,4 @@
-package com.example.jetgitusers.presentation.bottom_bar_navigation
+package com.example.jetgitusers.presentation.main_screens
 
 import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.layout.padding
@@ -20,8 +20,7 @@ import com.example.jetgitusers.utils.Routes.PROFILE_SCREEN
 import com.example.jetgitusers.utils.Routes.USERS_SCREEN
 
 @Composable
-fun BottomBarNavigation(
-    token: String?,
+fun MainScreens(
     enableEdgeToEdge: (SystemBarStyle) -> Unit,
     parentNavController: NavController
 ) {
@@ -43,14 +42,11 @@ fun BottomBarNavigation(
                         getColor(context, R.color.white)
                     )
                 )
-                UsersScreen(
-                    token = token.toString()
-                )
+                UsersScreen()
             }
 
             composable(PROFILE_SCREEN) {
                 ProfileScreen(
-                    token = token.toString(),
                     navigate = {
                         parentNavController.navigate(LOGIN_SCREEN) {
                             popUpTo(PROFILE_SCREEN) { inclusive = true }

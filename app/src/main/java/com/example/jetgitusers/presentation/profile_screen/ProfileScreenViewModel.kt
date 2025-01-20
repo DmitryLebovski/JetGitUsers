@@ -1,6 +1,5 @@
 package com.example.jetgitusers.presentation.profile_screen
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -53,4 +52,7 @@ class ProfileScreenViewModel @Inject constructor(
             }
         }
     }
+
+    fun getToken() = repository.getToken()
+    suspend fun clearToken() = repository.clearToken()
 }

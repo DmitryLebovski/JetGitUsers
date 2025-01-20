@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetgitusers.R
-import com.example.jetgitusers.data.DataStoreManager
 import com.example.jetgitusers.reusable_components.GithubCard
 import com.example.jetgitusers.utils.UsersUiState
 
@@ -56,10 +55,7 @@ fun LoginScreen(
 
     when(uiState) {
         UsersUiState.Success -> {
-            LaunchedEffect(Unit) {
-                DataStoreManager.saveToken(context, token)
-                navigate()
-            }
+            navigate()
         }
 
         UsersUiState.Loading -> {

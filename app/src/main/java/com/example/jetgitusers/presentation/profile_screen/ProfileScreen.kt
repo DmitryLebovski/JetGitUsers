@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.jetgitusers.R
-import com.example.jetgitusers.data.DataStoreManager
 import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.utils.UsersUiState
 import kotlinx.coroutines.CoroutineScope
@@ -40,15 +39,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProfileScreen(
     viewModel: ProfileScreenViewModel = hiltViewModel(),
-    token: String,
     navigate: () -> Unit
 ) {
-    val context = LocalContext.current
     val user by viewModel.user.collectAsState()
     val uiState = viewModel.usersUiState
+    val token = viewModel.getToken().collectAsState(initial = null)
 
-    LaunchedEffect(key1 = token){
-        viewModel.getUserData(token)
+    LaunchedEffect(key1 = token.value){
+        viewModel.getUserData(token.value.toString())
     }
 
     when(uiState) {
@@ -93,7 +91,7 @@ fun ProfileScreen(
                 TextButton(
                     onClick =  {
                         CoroutineScope(Dispatchers.IO).launch {
-                            DataStoreManager.clearToken(context)
+                            viewModel.clearToken()
                         }
                         navigate()
                     }

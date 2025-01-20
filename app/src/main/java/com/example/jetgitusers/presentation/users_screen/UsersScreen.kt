@@ -21,17 +21,19 @@ import com.example.jetgitusers.presentation.login_screen.ErrorScreen
 import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.reusable_components.UserCard
 import com.example.jetgitusers.utils.UsersUiState
+import kotlinx.coroutines.delay
 
 @Composable
 fun UsersScreen(
     viewModel: UsersViewModel = hiltViewModel(),
-    token: String,
 ){
     val uiState = viewModel.usersUiState
     val usersList by viewModel.users.collectAsState()
+    val token = viewModel.getToken().collectAsState(initial = null)
 
-    LaunchedEffect(key1 = token) {
-        viewModel.getUsers(token)
+    LaunchedEffect(key1 = token.value) {
+        delay(100L)
+        viewModel.getUsers(token.value.toString())
     }
 
     when(uiState) {

@@ -19,8 +19,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.jetgitusers.ui.theme.JetGitUsersTheme
 import androidx.navigation.compose.composable
 import com.example.jetgitusers.data.DataStoreManager
-import com.example.jetgitusers.presentation.bottom_bar_navigation.BottomBarNavigation
 import com.example.jetgitusers.presentation.login_screen.LoginScreen
+import com.example.jetgitusers.presentation.main_screens.MainScreens
 import com.example.jetgitusers.presentation.splash_screen.SplashScreen
 import com.example.jetgitusers.utils.Routes.LOGIN_SCREEN
 import com.example.jetgitusers.utils.Routes.MAIN_ROUTE
@@ -33,8 +33,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.light(Color.Transparent.toArgb(), Color.Transparent.toArgb()))
         setContent {
-            val token by DataStoreManager.getToken(applicationContext).collectAsState(initial = null)
-
             JetGitUsersTheme {
                 Surface(
                     modifier = Modifier
@@ -71,14 +69,14 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(MAIN_ROUTE) {
                                         popUpTo(MAIN_ROUTE) { inclusive = true }
                                         launchSingleTop = true
-                                        restoreState = false                                     }
+                                        restoreState = false
+                                    }
                                 }
                             )
                         }
 
                         composable(MAIN_ROUTE) {
-                            BottomBarNavigation(
-                                token = token,
+                            MainScreens(
                                 parentNavController = navController,
                                 enableEdgeToEdge = { systemBarStyle ->
                                     enableEdgeToEdge(systemBarStyle)
