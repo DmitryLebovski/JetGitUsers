@@ -18,7 +18,7 @@ interface UserApi {
         @Header("Authorization") authorization: String,
         @Header("Accept") accept: String = "application/vnd.github+json",
         @Query("per_page") perPage: Int = 30,
-        @Query("page") page: Int = 1
+        @Query("since") sinceId: Int = 1
     ): List<User>
 
     @GET("/users/{username}")

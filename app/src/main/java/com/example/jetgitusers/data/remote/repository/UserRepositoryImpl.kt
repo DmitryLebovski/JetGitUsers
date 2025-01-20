@@ -18,8 +18,8 @@ class UserRepositoryImpl(
         return api.getAuthenticatedUser(authorization = "Bearer $token")
     }
 
-    override suspend fun getUsers(token: String): List<User> {
-        return api.getUsers(authorization = "Bearer $token").map { dto->
+    override suspend fun getUsers(token: String, since: Int): List<User> {
+        return api.getUsers(authorization = "Bearer $token", sinceId = since).map { dto->
             User(
                 login = dto.login,
                 id = dto.id,

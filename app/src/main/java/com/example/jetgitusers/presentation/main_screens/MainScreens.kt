@@ -42,7 +42,13 @@ fun MainScreens(
                         getColor(context, R.color.white)
                     )
                 )
-                UsersScreen()
+                UsersScreen(
+                    navigate = {
+                        parentNavController.navigate(LOGIN_SCREEN) {
+                            popUpTo(USERS_SCREEN) { inclusive = true }
+                        }
+                    }
+                )
             }
 
             composable(PROFILE_SCREEN) {

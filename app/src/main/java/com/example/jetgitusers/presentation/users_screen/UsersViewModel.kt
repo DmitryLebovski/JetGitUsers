@@ -1,5 +1,6 @@
 package com.example.jetgitusers.presentation.users_screen
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -27,22 +28,26 @@ class UsersViewModel @Inject constructor(
 
     val token = repository.getToken()
 
-    fun getUsers(token: String) {
+    fun getUsers(token: String, since: Int) {
         viewModelScope.launch {
             usersUiState = UsersUiState.Loading
             try {
-                val usersList = repository.getUsers(token)
+                val usersList = repository.getUsers(token, since)
+                Log.d("USER_ID", usersList.map { it.id }.toString())
+
 
                 val updatedList = usersList.map { user ->
                     val detailedUser = repository.getUserInfo(user.login, token)
                     user.copy(followers = detailedUser.followers)
                 }
 
-                _users.value = updatedList
+                _users.value += updatedList
                 usersUiState = UsersUiState.Success
             } catch (e: HttpException) {
                 usersUiState = UsersUiState.Error
             }
         }
     }
+
+    suspend fun clearToken() = repository.clearToken()
 }
