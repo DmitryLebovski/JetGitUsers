@@ -31,7 +31,8 @@ import com.example.jetgitusers.R
 fun UserCard(
     login: String = stringResource(R.string.username_placeholder),
     avatarUrl: String,
-    followers: Int = 20
+    followers: Int = 20,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -40,7 +41,8 @@ fun UserCard(
             .padding(horizontal = 16.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
-        )
+        ),
+        onClick = onClick
     ) {
         Row {
             AsyncImage(

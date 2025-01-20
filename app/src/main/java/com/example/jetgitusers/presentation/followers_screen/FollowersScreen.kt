@@ -1,4 +1,4 @@
-package com.example.jetgitusers.presentation.users_screen
+package com.example.jetgitusers.presentation.followers_screen
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -27,27 +28,33 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetgitusers.R
-import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.reusable_components.UserCard
 import com.example.jetgitusers.utils.UsersUiState
 import kotlinx.coroutines.delay
 
 @Composable
-fun UsersScreen(
+fun FollowersScreen(
+    username: String,
     navigateIfError: () -> Unit,
     navigateToFollowers: (String) -> Unit,
-    viewModel: UsersViewModel = hiltViewModel(),
+    viewModel: FollowersScreenViewModel = hiltViewModel(),
 ){
     val context = LocalContext.current
     val token = viewModel.token.collectAsState(initial = null)
     val uiState = viewModel.usersUiState
-    val usersList by viewModel.users.collectAsState()
 
+    val followersList by viewModel.followers.collectAsState()
     var isLoading by remember { mutableStateOf(false) }
+
+    var page by remember { mutableIntStateOf(1) }
 
     LaunchedEffect(key1 = token.value) {
         delay(100L)
-        viewModel.getUsers(token.value.toString(), 1)
+        viewModel.getUserFollowers(
+            token = token.value.toString(),
+            page = page,
+            username = username
+        )
     }
 
     val lazyListState = rememberLazyListState()
@@ -55,38 +62,33 @@ fun UsersScreen(
     val layoutInfo = lazyListState.layoutInfo
     val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
     val itemCount = layoutInfo.totalItemsCount
+    LazyColumn (
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = colorResource(R.color.light_grey))
+            .padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        state = lazyListState
+    ) {
+        items(followersList) { user ->
+            UserCard(
+                login = user.login,
+                avatarUrl = user.avatar_url,
+                followers = user.followers,
+                onClick = { navigateToFollowers(user.login) }
+            )
+        }
 
-    if (uiState == UsersUiState.Loading && usersList.isEmpty()) {
-        LoadingScreen()
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = colorResource(R.color.light_grey))
-                .padding(vertical = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            state = lazyListState
-        ) {
-            items(usersList) { user ->
-                UserCard(
-                    login = user.login,
-                    avatarUrl = user.avatar_url,
-                    followers = user.followers,
-                    onClick = { navigateToFollowers(user.login) }
-                )
-            }
-
-            item {
-                if (uiState == UsersUiState.Loading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(40.dp),
-                        contentAlignment = Alignment.BottomCenter
-                    ) {
-                        CircularProgressIndicator()
-                    }
+        item {
+            if (uiState == UsersUiState.Loading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    CircularProgressIndicator()
                 }
             }
         }
@@ -95,9 +97,12 @@ fun UsersScreen(
     LaunchedEffect(key1 = lastVisibleIndex) {
         if (lastVisibleIndex == itemCount - 1 && uiState != UsersUiState.Loading) {
             isLoading = true
-            val lastUserId = usersList.lastOrNull()?.id
+            page += 1
 
-            viewModel.getUsers(token = token.value.toString(), since = lastUserId?: 1)
+            viewModel.getUserFollowers(
+                token = token.value.toString(),
+                page = page,
+                username = username)
             isLoading = false
         }
     }

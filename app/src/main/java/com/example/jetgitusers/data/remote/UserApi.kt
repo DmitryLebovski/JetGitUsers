@@ -32,6 +32,8 @@ interface UserApi {
     suspend fun getUserFollowers(
         @Header("Authorization") authorization: String,
         @Header("Accept") accept: String = "application/vnd.github+json",
-        @Path("username") username: String
-    ): User
+        @Path("username") username: String,
+        @Query("per_page") perPage: Int = 30,
+        @Query("page") page: Int = 1
+    ): List<User>
 }

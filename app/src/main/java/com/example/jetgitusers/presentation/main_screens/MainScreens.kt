@@ -43,11 +43,12 @@ fun MainScreens(
                     )
                 )
                 UsersScreen(
-                    navigate = {
+                    navigateIfError = {
                         parentNavController.navigate(LOGIN_SCREEN) {
                             popUpTo(USERS_SCREEN) { inclusive = true }
                         }
-                    }
+                    },
+                    navigateToFollowers = {}, //TODO()
                 )
             }
 
