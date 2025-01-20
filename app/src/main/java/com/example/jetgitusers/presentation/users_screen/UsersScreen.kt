@@ -1,5 +1,6 @@
 package com.example.jetgitusers.presentation.users_screen
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,14 +23,16 @@ import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.reusable_components.UserCard
 import com.example.jetgitusers.utils.UsersUiState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 
+@SuppressLint("FlowOperatorInvokedInComposition")
 @Composable
 fun UsersScreen(
-    viewModel: UsersViewModel = hiltViewModel(),
+    viewModel: UsersViewModel = hiltViewModel()
 ){
+    val token = viewModel.token.collectAsState(initial = null)
     val uiState = viewModel.usersUiState
     val usersList by viewModel.users.collectAsState()
-    val token = viewModel.getToken().collectAsState(initial = null)
 
     LaunchedEffect(key1 = token.value) {
         delay(100L)

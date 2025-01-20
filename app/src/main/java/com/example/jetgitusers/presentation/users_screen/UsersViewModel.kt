@@ -25,6 +25,8 @@ class UsersViewModel @Inject constructor(
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users
 
+    val token = repository.getToken()
+
     fun getUsers(token: String) {
         viewModelScope.launch {
             usersUiState = UsersUiState.Loading
@@ -37,6 +39,4 @@ class UsersViewModel @Inject constructor(
             }
         }
     }
-
-    fun getToken() = repository.getToken()
 }

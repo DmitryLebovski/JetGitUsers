@@ -1,6 +1,5 @@
 package com.example.jetgitusers.presentation.login_screen
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,7 +18,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,13 +47,15 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     var token by remember { mutableStateOf("") }
-    val user by viewModel.user.collectAsState()
     val uiState = viewModel.usersUiState
     var isToastShown by remember { mutableStateOf(false) }
 
     when(uiState) {
         UsersUiState.Success -> {
-            navigate()
+            LaunchedEffect(Unit) {
+                viewModel.saveToken(token)
+                navigate()
+            }
         }
 
         UsersUiState.Loading -> {
@@ -124,9 +124,6 @@ fun LoginScreen(
                     if (token.isNotEmpty()) {
                         isToastShown = false
                         viewModel.checkUserExist(token)
-                        Log.d("CHECK_TOKEN", token)
-                        Log.d("CHECK_TOKEN", user.toString())
-                        Log.d("CHECK_TOKEN", uiState.toString())
                     } else {
                         Toast.makeText(context,
                             context.getString(R.string.token_is_empty), Toast.LENGTH_LONG).show()

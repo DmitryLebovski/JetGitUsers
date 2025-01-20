@@ -1,11 +1,8 @@
 package com.example.jetgitusers.presentation.login_screen
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
@@ -46,10 +43,8 @@ class LoginScreenViewModel @Inject constructor(
             try {
                 usersUiState = UsersUiState.Loading
                 val userInfo = repository.getAuthorizedUser(token)
-                Log.d("API_RESPONSE", userInfo.toString())
                 _user.emit(userInfo)
                 usersUiState = UsersUiState.Success
-                repository.saveToken(token)
             } catch (e: HttpException) {
                 usersUiState = UsersUiState.Error
             } catch (e: IOException) {
@@ -59,4 +54,6 @@ class LoginScreenViewModel @Inject constructor(
             }
         }
     }
+
+    suspend fun saveToken(token: String) = repository.saveToken(token)
 }
