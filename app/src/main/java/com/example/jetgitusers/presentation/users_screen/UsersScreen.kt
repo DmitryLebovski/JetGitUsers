@@ -34,6 +34,9 @@ import com.example.jetgitusers.utils.Routes.FOLLOWERS_SCREEN
 import com.example.jetgitusers.utils.UsersUiState
 import kotlinx.coroutines.delay
 
+// TODO проверять наличие интернетов на телефоне (не через запрос в сеть)
+// TODO initial loading можно перенести в init viewModel
+
 @Composable
 fun UsersScreen(
     navigateIfError: () -> Unit,
@@ -106,6 +109,7 @@ fun UsersScreen(
         }
     }
 
+    // TODO HTTP code
     if (uiState == UsersUiState.Error) {
         Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
             .show()

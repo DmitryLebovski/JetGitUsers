@@ -16,12 +16,16 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import javax.inject.Inject
 
+// TODO MVI
+
 @HiltViewModel
 class UsersViewModel @Inject constructor(
     private val repository: UserRepository
 ) : ViewModel() {
     var usersUiState: UsersUiState by mutableStateOf(UsersUiState.Loading)
         private set
+
+    // val uiState: StateFlow
 
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users

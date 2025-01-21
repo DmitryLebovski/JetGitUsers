@@ -23,7 +23,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit = Retrofit.Builder()
-        .baseUrl("https://api.github.com/")
+        .baseUrl("https://api.github.com/") // TODO BuildConfig почитать сделать
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 

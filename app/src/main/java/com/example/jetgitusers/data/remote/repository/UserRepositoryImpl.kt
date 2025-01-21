@@ -10,6 +10,7 @@ import com.example.jetgitusers.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+//  TODO слишком много делает репозиторий S из SOLID
 class UserRepositoryImpl(
     private val api: UserApi,
     private val dataStore: DataStore<Preferences>
