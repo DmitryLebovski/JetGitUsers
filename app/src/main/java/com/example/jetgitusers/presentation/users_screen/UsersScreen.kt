@@ -26,16 +26,18 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.jetgitusers.R
 import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.reusable_components.UserCard
+import com.example.jetgitusers.utils.Routes.FOLLOWERS_SCREEN
 import com.example.jetgitusers.utils.UsersUiState
 import kotlinx.coroutines.delay
 
 @Composable
 fun UsersScreen(
     navigateIfError: () -> Unit,
-    navigateToFollowers: (String) -> Unit,
+    navController: NavController,
     viewModel: UsersViewModel = hiltViewModel(),
 ){
     val context = LocalContext.current
@@ -73,7 +75,9 @@ fun UsersScreen(
                     login = user.login,
                     avatarUrl = user.avatar_url,
                     followers = user.followers,
-                    onClick = { navigateToFollowers(user.login) }
+                    onClick = {
+                        navController.navigate("$FOLLOWERS_SCREEN/${user.login}")
+                    }
                 )
             }
 
