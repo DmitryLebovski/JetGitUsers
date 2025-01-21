@@ -1,4 +1,4 @@
-package com.example.jetgitusers.presentation.main_screens
+package com.example.jetgitusers.navigation
 
 import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.layout.padding
@@ -24,7 +24,7 @@ import com.example.jetgitusers.utils.Routes.PROFILE_SCREEN
 import com.example.jetgitusers.utils.Routes.USERS_SCREEN
 
 @Composable
-fun MainScreens(
+fun MainScreen(
     enableEdgeToEdge: (SystemBarStyle) -> Unit,
     parentNavController: NavController
 ) {

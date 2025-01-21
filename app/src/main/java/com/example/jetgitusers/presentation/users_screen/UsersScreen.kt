@@ -15,6 +15,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,10 +33,8 @@ import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.reusable_components.UserCard
 import com.example.jetgitusers.utils.Routes.FOLLOWERS_SCREEN
 import com.example.jetgitusers.utils.UsersUiState
-import kotlinx.coroutines.delay
 
 // TODO проверять наличие интернетов на телефоне (не через запрос в сеть)
-// TODO initial loading можно перенести в init viewModel
 
 @Composable
 fun UsersScreen(
@@ -49,15 +48,17 @@ fun UsersScreen(
     val usersList by viewModel.users.collectAsState()
 
     var isLoading by remember { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = token.value) {
-        delay(100L)
-        viewModel.getUsers(token.value.toString(), 1)
-    }
-
     val lazyListState = rememberLazyListState()
 
-    val layoutInfo = lazyListState.layoutInfo // TODO разобраться
+    val layoutInfo by remember { derivedStateOf { lazyListState.layoutInfo } }
+    // исходная ошибка lazyListState.layoutInfo:  Frequently changing state(The object of LazyListLayoutInfo
+    // calculated during the last layout pass) should not be directly read in composable function
+    // любое изменение lazyListState приведет к изменению переменной
+
+    // решение: by remember { derivedStateOf { lazyListState.layoutInfo } }
+    // оптимизирован для отслеживания изменений, предотвращая ненужные персчеты,
+    // если знчение изменилось, но не затронуло логику
+    // (значение будет переписано исключительно в случае реального изменения lazyListState.layoutInfo)
     val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
     val itemCount = layoutInfo.totalItemsCount
 

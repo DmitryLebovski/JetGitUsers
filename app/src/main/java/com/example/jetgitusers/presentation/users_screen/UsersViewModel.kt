@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
+import com.example.jetgitusers.domain.repository.TokenRepository
 import com.example.jetgitusers.domain.repository.UserRepository
 import com.example.jetgitusers.utils.UsersUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UsersViewModel @Inject constructor(
-    private val repository: UserRepository
+    private val repository: UserRepository,
+    private val tokenRepository: TokenRepository
 ) : ViewModel() {
     var usersUiState: UsersUiState by mutableStateOf(UsersUiState.Loading)
         private set
@@ -30,7 +32,15 @@ class UsersViewModel @Inject constructor(
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users
 
-    val token = repository.getToken()
+    val token = tokenRepository.getToken()
+
+    init {
+        viewModelScope.launch {
+            token.collect { collectedToken ->
+                collectedToken?.let { getUsers(collectedToken, 1) }
+            }
+        }
+    }
 
     fun getUsers(token: String, since: Int) {
         viewModelScope.launch {
@@ -53,5 +63,5 @@ class UsersViewModel @Inject constructor(
         }
     }
 
-    suspend fun clearToken() = repository.clearToken()
+    suspend fun clearToken() = tokenRepository.clearToken()
 }

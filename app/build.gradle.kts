@@ -27,6 +27,19 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField(
+                type = "String",
+                name = "BASE_URL",
+                value = "\"https://api.github.com\"",
+            )
+        }
+
+        debug {
+            buildConfigField(
+                type = "String",
+                name = "BASE_URL",
+                value = "\"https://api.github.com\"",
+            )
         }
     }
     compileOptions {
@@ -38,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

@@ -3,9 +3,12 @@ package com.example.jetgitusers.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.example.jetgitusers.BuildConfig
 import com.example.jetgitusers.data.dataStore
 import com.example.jetgitusers.data.remote.UserApi
+import com.example.jetgitusers.data.remote.repository.TokenRepositoryImpl
 import com.example.jetgitusers.data.remote.repository.UserRepositoryImpl
+import com.example.jetgitusers.domain.repository.TokenRepository
 import com.example.jetgitusers.domain.repository.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -19,11 +22,10 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
     @Provides
     @Singleton
     fun provideRetrofit(): Retrofit = Retrofit.Builder()
-        .baseUrl("https://api.github.com/") // TODO BuildConfig почитать сделать
+        .baseUrl(BuildConfig.BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
@@ -33,7 +35,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserRepository(api: UserApi, datastore: DataStore<Preferences>): UserRepository = UserRepositoryImpl(api, datastore)
+    fun provideUserRepository(api: UserApi): UserRepository = UserRepositoryImpl(api)
+
+    @Provides
+    @Singleton
+    fun provideTokenRepository(datastore: DataStore<Preferences>): TokenRepository = TokenRepositoryImpl(datastore)
 
     @Provides
     @Singleton

@@ -42,11 +42,6 @@ fun ProfileScreen(
 ) {
     val user by viewModel.user.collectAsState()
     val uiState = viewModel.usersUiState
-    val token = viewModel.getToken().collectAsState(initial = null)
-
-    LaunchedEffect(key1 = token.value){
-        viewModel.getUserData(token.value.toString())
-    }
 
     when(uiState) {
         UsersUiState.Success -> {
