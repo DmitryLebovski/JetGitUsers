@@ -14,7 +14,7 @@
     <string name="log_out">Log Out</string>
     <string name="api_failed">Not successful connection with API (check token or internet)</string>
     <string name="connection_failed">No internet connection</string>
-    <string name="update">Update</string>
+    <string name="retry">Retry</string>
     <string name="checking">Checking…</string>
     <string name="user_not_found">User not found!</string>
     <string name="unexpected_error">Unexpected error!</string>

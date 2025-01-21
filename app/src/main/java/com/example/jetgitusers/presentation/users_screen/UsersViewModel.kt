@@ -44,8 +44,6 @@ class UsersViewModel @Inject constructor(
                     _uiState.value = UiState.Loading
                     try {
                         val usersList = repository.getUsers(collectedToken, since)
-                        Log.d("USER_ID", usersList.map { it.id }.toString())
-
 
                         val updatedList = usersList.map { user ->
                             val detailedUser = repository.getUserInfo(user.login, collectedToken)

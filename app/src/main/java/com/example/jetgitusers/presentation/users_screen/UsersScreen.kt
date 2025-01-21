@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,6 +34,7 @@ import com.example.jetgitusers.presentation.login_screen.ErrorScreen
 import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.reusable_components.UserCard
 import com.example.jetgitusers.utils.AppError
+import com.example.jetgitusers.utils.CheckConnection
 import com.example.jetgitusers.utils.Routes.FOLLOWERS_SCREEN
 import com.example.jetgitusers.utils.UiState
 
@@ -85,7 +87,7 @@ fun UsersScreen(
             }
 
             item {
-                if (uiState == UiState.Loading) {
+                if (uiState == UiState.Loading && CheckConnection.isInternetAvailable(context)) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -94,6 +96,10 @@ fun UsersScreen(
                     ) {
                         CircularProgressIndicator()
                     }
+                } else if (usersList.isNotEmpty() && !CheckConnection.isInternetAvailable(context)) {
+                    Text(
+                        text = stringResource(R.string.connection_failed)
+                    )
                 }
             }
         }
@@ -119,8 +125,12 @@ fun UsersScreen(
     }
 
     if (uiState is UiState.Error && (uiState as UiState.Error).error == AppError.SYSTEM) {
-        ErrorScreen(
-            update = { viewModel.getUsers(1) }
-        )
+        if (!CheckConnection.isInternetAvailable(context) && usersList.isEmpty()){
+            ErrorScreen(
+                update = { viewModel.getUsers(1) }
+            )
+        } else {
+            viewModel.getUsers(1)
+        }
     }
 }

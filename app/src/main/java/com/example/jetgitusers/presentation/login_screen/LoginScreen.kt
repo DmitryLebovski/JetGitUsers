@@ -195,7 +195,7 @@ fun ErrorScreen(
                 .padding(16.dp)
                 .height(44.dp)
         ) {
-            Text(text = stringResource(id = R.string.update))
+            Text(text = stringResource(id = R.string.retry))
         }
     }
 }
