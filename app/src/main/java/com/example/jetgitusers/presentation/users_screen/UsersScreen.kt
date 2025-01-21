@@ -57,7 +57,7 @@ fun UsersScreen(
 
     val lazyListState = rememberLazyListState()
 
-    val layoutInfo = lazyListState.layoutInfo
+    val layoutInfo = lazyListState.layoutInfo // TODO разобраться
     val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
     val itemCount = layoutInfo.totalItemsCount
 
