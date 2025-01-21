@@ -41,7 +41,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetgitusers.R
 import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.reusable_components.UserCard
-import com.example.jetgitusers.utils.UsersUiState
+import com.example.jetgitusers.utils.AppError
+import com.example.jetgitusers.utils.UiState
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +57,7 @@ fun FollowersScreen(
     
     val context = LocalContext.current
     val token = viewModel.token.collectAsState(initial = null)
-    val uiState = viewModel.usersUiState
+    val uiState by viewModel.uiState.collectAsState()
     val followersList by viewModel.followers.collectAsState()
     
     var page by remember { mutableIntStateOf(1) }
@@ -78,7 +79,7 @@ fun FollowersScreen(
     val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
     val itemCount = layoutInfo.totalItemsCount
 
-    if (uiState == UsersUiState.Loading && followersList.isEmpty()) {
+    if (uiState == UiState.Loading && followersList.isEmpty()) {
         LoadingScreen()
     } else {
         Scaffold (
@@ -125,7 +126,7 @@ fun FollowersScreen(
                     }
 
                     item {
-                        if (uiState == UsersUiState.Loading) {
+                        if (uiState == UiState.Loading) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -142,7 +143,7 @@ fun FollowersScreen(
     }
 
     LaunchedEffect(key1 = lastVisibleIndex) {
-        if (lastVisibleIndex == itemCount - 1 && uiState != UsersUiState.Loading) {
+        if (lastVisibleIndex == itemCount - 1 && uiState != UiState.Loading) {
             isLoading = true
             page += 1
 
@@ -155,7 +156,7 @@ fun FollowersScreen(
         }
     }
 
-    if (uiState == UsersUiState.Error) {
+    if (uiState == UiState.Error(AppError.SYSTEM)) {
         Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
             .show()
         LaunchedEffect(Unit){

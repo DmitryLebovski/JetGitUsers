@@ -29,12 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.jetgitusers.R
+import com.example.jetgitusers.presentation.login_screen.ErrorScreen
 import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.reusable_components.UserCard
+import com.example.jetgitusers.utils.AppError
 import com.example.jetgitusers.utils.Routes.FOLLOWERS_SCREEN
-import com.example.jetgitusers.utils.UsersUiState
-
-// TODO проверять наличие интернетов на телефоне (не через запрос в сеть)
+import com.example.jetgitusers.utils.UiState
 
 @Composable
 fun UsersScreen(
@@ -43,8 +43,7 @@ fun UsersScreen(
     viewModel: UsersViewModel = hiltViewModel(),
 ){
     val context = LocalContext.current
-    val token = viewModel.token.collectAsState(initial = null)
-    val uiState = viewModel.usersUiState
+    val uiState by viewModel.uiState.collectAsState()
     val usersList by viewModel.users.collectAsState()
 
     var isLoading by remember { mutableStateOf(false) }
@@ -62,7 +61,7 @@ fun UsersScreen(
     val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
     val itemCount = layoutInfo.totalItemsCount
 
-    if (uiState == UsersUiState.Loading && usersList.isEmpty()) {
+    if (uiState == UiState.Loading && usersList.isEmpty()) {
         LoadingScreen()
     } else {
         LazyColumn(
@@ -86,7 +85,7 @@ fun UsersScreen(
             }
 
             item {
-                if (uiState == UsersUiState.Loading) {
+                if (uiState == UiState.Loading) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -101,22 +100,27 @@ fun UsersScreen(
     }
 
     LaunchedEffect(key1 = lastVisibleIndex) {
-        if (lastVisibleIndex == itemCount - 1 && uiState != UsersUiState.Loading) {
+        if (lastVisibleIndex == itemCount - 1 && uiState != UiState.Loading) {
             isLoading = true
             val lastUserId = usersList.lastOrNull()?.id
 
-            viewModel.getUsers(token = token.value.toString(), since = lastUserId?: 1)
+            viewModel.getUsers(since = lastUserId?: 1)
             isLoading = false
         }
     }
 
-    // TODO HTTP code
-    if (uiState == UsersUiState.Error) {
+    if (uiState is UiState.Error && (uiState as UiState.Error).error == AppError.INTERNET) {
         Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
             .show()
         LaunchedEffect(Unit){
             viewModel.clearToken()
+            navigateIfError()
         }
-        navigateIfError()
+    }
+
+    if (uiState is UiState.Error && (uiState as UiState.Error).error == AppError.SYSTEM) {
+        ErrorScreen(
+            update = { viewModel.getUsers(1) }
+        )
     }
 }

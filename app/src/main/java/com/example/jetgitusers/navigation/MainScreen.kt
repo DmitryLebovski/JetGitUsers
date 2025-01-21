@@ -89,7 +89,12 @@ fun MainScreen(
                         parentNavController.navigate(LOGIN_SCREEN) {
                             popUpTo(PROFILE_SCREEN) { inclusive = true }
                         }
-                    }
+                    },
+                    navigateIfError = {
+                        parentNavController.navigate(LOGIN_SCREEN) {
+                            popUpTo(FOLLOWERS_SCREEN) { inclusive = true }
+                        }
+                    },
                 )
             }
         }

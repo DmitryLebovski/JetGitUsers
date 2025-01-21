@@ -1,7 +1,11 @@
 package com.example.jetgitusers.utils
 
-sealed interface UsersUiState {
-    object Loading : UsersUiState
-    object Success : UsersUiState
-    object Error : UsersUiState
+sealed interface UiState {
+    object Loading : UiState
+    object Success : UiState
+    class Error(val error: AppError) : UiState
+}
+
+enum class AppError {
+    SYSTEM, INTERNET
 }

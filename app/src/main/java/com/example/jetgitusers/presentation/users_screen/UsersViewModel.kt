@@ -1,20 +1,20 @@
 package com.example.jetgitusers.presentation.users_screen
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
 import com.example.jetgitusers.domain.repository.TokenRepository
 import com.example.jetgitusers.domain.repository.UserRepository
-import com.example.jetgitusers.utils.UsersUiState
+import com.example.jetgitusers.utils.AppError.SYSTEM
+import com.example.jetgitusers.utils.AppError.INTERNET
+import com.example.jetgitusers.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 
 // TODO MVI
@@ -24,10 +24,9 @@ class UsersViewModel @Inject constructor(
     private val repository: UserRepository,
     private val tokenRepository: TokenRepository
 ) : ViewModel() {
-    var usersUiState: UsersUiState by mutableStateOf(UsersUiState.Loading)
-        private set
 
-    // val uiState: StateFlow
+    private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
+    val uiState: StateFlow<UiState> = _uiState
 
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users
@@ -35,30 +34,34 @@ class UsersViewModel @Inject constructor(
     val token = tokenRepository.getToken()
 
     init {
-        viewModelScope.launch {
-            token.collect { collectedToken ->
-                collectedToken?.let { getUsers(collectedToken, 1) }
-            }
-        }
+        getUsers(1)
     }
 
-    fun getUsers(token: String, since: Int) {
+    fun getUsers(since: Int) {
         viewModelScope.launch {
-            usersUiState = UsersUiState.Loading
-            try {
-                val usersList = repository.getUsers(token, since)
-                Log.d("USER_ID", usersList.map { it.id }.toString())
+            token.collect { collectedToken ->
+                collectedToken?.let {
+                    _uiState.value = UiState.Loading
+                    try {
+                        val usersList = repository.getUsers(collectedToken, since)
+                        Log.d("USER_ID", usersList.map { it.id }.toString())
 
 
-                val updatedList = usersList.map { user ->
-                    val detailedUser = repository.getUserInfo(user.login, token)
-                    user.copy(followers = detailedUser.followers)
+                        val updatedList = usersList.map { user ->
+                            val detailedUser = repository.getUserInfo(user.login, collectedToken)
+                            user.copy(followers = detailedUser.followers)
+                        }
+
+                        _users.value += updatedList
+                        _uiState.value = UiState.Success
+                    } catch (e: IOException) {
+                        Log.d("exeptUs", e.toString())
+                        _uiState.value = UiState.Error(SYSTEM)
+                    } catch (e: HttpException) {
+                        Log.d("exeptUs", e.toString())
+                        _uiState.value = UiState.Error(INTERNET)
+                    }
                 }
-
-                _users.value += updatedList
-                usersUiState = UsersUiState.Success
-            } catch (e: HttpException) {
-                usersUiState = UsersUiState.Error
             }
         }
     }
