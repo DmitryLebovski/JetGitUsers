@@ -17,8 +17,6 @@ import com.example.jetgitusers.utils.Routes.PROFILE_SCREEN
 import com.example.jetgitusers.utils.Routes.USERS_SCREEN
 import kotlinx.coroutines.flow.map
 
-// TODO относится к мейн модулю, не знает про глобальную навигацию
-
 @Composable
 fun BottomBar(navController: NavController) {
     val currentRoute by navController.currentBackStackEntryFlow

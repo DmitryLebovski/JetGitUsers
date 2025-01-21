@@ -60,7 +60,11 @@ fun AppScreen(
 
         composable(MAIN_ROUTE) {
             MainScreen(
-                parentNavController = navController,
+                navigateToLogin = {
+                    navController.navigate(LOGIN_SCREEN) {
+                        popUpTo(MAIN_ROUTE) { inclusive = true }
+                    }
+                },
                 enableEdgeToEdge = { systemBarStyle ->
                     enableEdgeToEdge(systemBarStyle)
                 }

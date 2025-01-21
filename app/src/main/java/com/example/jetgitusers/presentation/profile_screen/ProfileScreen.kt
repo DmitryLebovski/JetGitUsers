@@ -42,7 +42,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun ProfileScreen(
     viewModel: ProfileScreenViewModel = hiltViewModel(),
-    navigate: () -> Unit,
     navigateIfError: () -> Unit
 ) {
     val context = LocalContext.current
@@ -92,7 +91,7 @@ fun ProfileScreen(
                     CoroutineScope(Dispatchers.IO).launch {
                         viewModel.clearToken()
                     }
-                    navigate()
+                    navigateIfError()
                 }
             ) {
                 Text(
