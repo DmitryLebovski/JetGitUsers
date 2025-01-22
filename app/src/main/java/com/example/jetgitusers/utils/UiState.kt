@@ -3,6 +3,7 @@ package com.example.jetgitusers.utils
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import com.example.jetgitusers.domain.model.User
 
 sealed interface UiState {
     object Loading : UiState
@@ -27,4 +28,10 @@ object CheckConnection {
         }
         return result
     }
+}
+
+sealed class UsersState {
+    object Loading : UsersState()
+    data class Success(val users: List<User>, val loadMore: Boolean = false) : UsersState()
+    data class Error(val error: AppError) : UsersState()
 }

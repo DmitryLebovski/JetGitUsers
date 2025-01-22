@@ -170,7 +170,6 @@ fun LoadingScreen() {
 @Composable
 fun ErrorScreen(
     modifier: Modifier = Modifier,
-    update: () -> Unit
 ) {
     Column (
         modifier = modifier.fillMaxSize(),
@@ -185,17 +184,5 @@ fun ErrorScreen(
             text = stringResource(id = R.string.connection_failed),
             modifier = Modifier.padding(16.dp)
         )
-
-        Button(
-            onClick = update,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colorResource(R.color.dark_grey)
-            ),
-            modifier = Modifier
-                .padding(16.dp)
-                .height(44.dp)
-        ) {
-            Text(text = stringResource(id = R.string.retry))
-        }
     }
 }

@@ -34,6 +34,7 @@ import com.example.jetgitusers.R
 import com.example.jetgitusers.presentation.login_screen.ErrorScreen
 import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.utils.AppError
+import com.example.jetgitusers.utils.CheckConnection
 import com.example.jetgitusers.utils.UiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -119,8 +120,10 @@ fun ProfileScreen(
     }
 
     if (uiState is UiState.Error && (uiState as UiState.Error).error == AppError.SYSTEM) {
-        ErrorScreen(
-            update = { viewModel.getUserData() }
-        )
+        if (!CheckConnection.isInternetAvailable(context)){
+            ErrorScreen()
+        } else {
+            viewModel.getUserData()
+        }
     }
 }
