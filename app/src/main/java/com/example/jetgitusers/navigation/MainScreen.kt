@@ -4,6 +4,8 @@ import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat.getColor
@@ -20,6 +22,7 @@ import com.example.jetgitusers.tools.BottomBar
 import com.example.jetgitusers.utils.Routes.FOLLOWERS_SCREEN
 import com.example.jetgitusers.utils.Routes.PROFILE_SCREEN
 import com.example.jetgitusers.utils.Routes.USERS_SCREEN
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun MainScreen(
@@ -28,9 +31,20 @@ fun MainScreen(
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val currentRoute by navController.currentBackStackEntryFlow
+        .map { it.destination.route }
+        .collectAsState(initial = USERS_SCREEN)
 
     Scaffold(
-        bottomBar = { BottomBar(navController) }
+        bottomBar = { BottomBar(
+            currentRoute = currentRoute,
+            navigateToUsers = {
+                navController.navigate(USERS_SCREEN)
+            },
+            navigateToProfile = {
+                navController.navigate(PROFILE_SCREEN)
+            }
+        ) }
     ) { paddingValues ->
         NavHost(
             navController = navController,

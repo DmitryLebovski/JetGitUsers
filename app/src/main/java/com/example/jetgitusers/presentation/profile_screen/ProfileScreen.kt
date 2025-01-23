@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.jetgitusers.R
+import com.example.jetgitusers.domain.model.User
 import com.example.jetgitusers.presentation.login_screen.ErrorScreen
 import com.example.jetgitusers.presentation.login_screen.LoadingScreen
 import com.example.jetgitusers.utils.AppError
@@ -49,81 +50,98 @@ fun ProfileScreen(
     val user by viewModel.user.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
 
-    if (uiState == UiState.Success) {
-        Column (
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = colorResource(R.color.light_grey)),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            AsyncImage(
-                model = user.avatar_url,
-                placeholder = painterResource(R.drawable.github_placeholder),
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .width(200.dp)
-                    .height(200.dp)
-                    .clip(CircleShape)
+    when(uiState) {
+        is UiState.Success -> {
+            ResultProfileScreen(
+                user = user,
+                navigateIfError = navigateIfError,
+                clearToken = { viewModel.clearToken() }
             )
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
+        is UiState.Loading -> {
+            LoadingScreen()
+        }
 
-            Text(
-                text = user.login,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = FontFamily(Font(R.font.montserrat_regular),
-                )
-            )
-            Text(
-                text = stringResource(R.string.followers_placeholder, user.followers),
-                fontFamily = FontFamily(Font(R.font.montserrat_regular))
-            )
-            Text(
-                text = stringResource(R.string.repositories_placeholder, user.public_repos),
-                fontFamily = FontFamily(Font(R.font.montserrat_regular))
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            TextButton(
-                onClick =  {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        viewModel.clearToken()
-                    }
+        is UiState.Error -> {
+            if ((uiState as UiState.Error).error == AppError.INTERNET) {
+                Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
+                    .show()
+                LaunchedEffect(Unit){
+                    viewModel.clearToken()
                     navigateIfError()
                 }
-            ) {
-                Text(
-                    text = stringResource(R.string.log_out),
-                    fontFamily = FontFamily(Font(R.font.montserrat_regular)),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color.Red
-                )
+            }
+
+            if ((uiState as UiState.Error).error == AppError.SYSTEM) {
+                if (!CheckConnection.isInternetAvailable(context)){
+                    ErrorScreen()
+                } else {
+                    viewModel.getUserData()
+                }
             }
         }
     }
+}
 
-    if (uiState == UiState.Loading) {
-        LoadingScreen()
-    }
+@Composable
+fun ResultProfileScreen(
+    user: User,
+    navigateIfError: () -> Unit,
+    clearToken: suspend () -> Unit
+) {
+    Column (
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = colorResource(R.color.light_grey)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        AsyncImage(
+            model = user.avatar_url,
+            placeholder = painterResource(R.drawable.github_placeholder),
+            contentDescription = "Profile Picture",
+            modifier = Modifier
+                .width(200.dp)
+                .height(200.dp)
+                .clip(CircleShape)
+        )
 
-    if (uiState is UiState.Error && (uiState as UiState.Error).error == AppError.INTERNET) {
-        Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
-            .show()
-        LaunchedEffect(Unit){
-            viewModel.clearToken()
-            navigateIfError()
-        }
-    }
+        Spacer(modifier = Modifier.height(16.dp))
 
-    if (uiState is UiState.Error && (uiState as UiState.Error).error == AppError.SYSTEM) {
-        if (!CheckConnection.isInternetAvailable(context)){
-            ErrorScreen()
-        } else {
-            viewModel.getUserData()
+        Text(
+            text = user.login,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontFamily = FontFamily(Font(R.font.montserrat_regular),
+            )
+        )
+        Text(
+            text = stringResource(R.string.followers_placeholder, user.followers),
+            fontFamily = FontFamily(Font(R.font.montserrat_regular))
+        )
+        Text(
+            text = stringResource(R.string.repositories_placeholder, user.public_repos),
+            fontFamily = FontFamily(Font(R.font.montserrat_regular))
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextButton(
+            onClick =  {
+                CoroutineScope(Dispatchers.IO).launch {
+                    clearToken()
+                }
+                navigateIfError()
+            }
+        ) {
+            Text(
+                text = stringResource(R.string.log_out),
+                fontFamily = FontFamily(Font(R.font.montserrat_regular)),
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color.Red
+            )
         }
     }
 }

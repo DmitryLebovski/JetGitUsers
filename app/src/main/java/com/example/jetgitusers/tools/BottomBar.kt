@@ -5,24 +5,20 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.navigation.NavController
 import com.example.jetgitusers.R
 import com.example.jetgitusers.ui.theme.AppFont
 import com.example.jetgitusers.utils.Routes.PROFILE_SCREEN
 import com.example.jetgitusers.utils.Routes.USERS_SCREEN
-import kotlinx.coroutines.flow.map
 
 @Composable
-fun BottomBar(navController: NavController) {
-    val currentRoute by navController.currentBackStackEntryFlow
-        .map { it.destination.route }
-        .collectAsState(initial = USERS_SCREEN)
-
+fun BottomBar(
+    currentRoute: String?,
+    navigateToUsers:() -> Unit,
+    navigateToProfile: () -> Unit
+) {
     NavigationBar(
         containerColor = Color.White
     ) {
@@ -36,7 +32,7 @@ fun BottomBar(navController: NavController) {
             },
             label = { Text(stringResource(R.string.users_button)) },
             selected = currentRoute == USERS_SCREEN,
-            onClick = { navController.navigate(USERS_SCREEN) },
+            onClick = { navigateToUsers() },
             alwaysShowLabel = false,
             colors = NavigationBarItemDefaults.colors(
                 indicatorColor = Color.Transparent,
@@ -68,7 +64,7 @@ fun BottomBar(navController: NavController) {
             },
             label = { Text(stringResource(R.string.profile_button)) },
             selected = currentRoute == PROFILE_SCREEN,
-            onClick = { navController.navigate(PROFILE_SCREEN) },
+            onClick = { navigateToProfile() },
             alwaysShowLabel = false,
             colors = NavigationBarItemDefaults.colors(
                 indicatorColor = Color.Transparent,

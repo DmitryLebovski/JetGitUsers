@@ -65,10 +65,9 @@ class UsersViewModel @Inject constructor(
     }
 
     private fun loadMoreUsers() {
-        if (isLoadingMore) return
-        isLoadingMore = true
         val currentState = _uiState.value
-        if (currentState is UsersState.Success) {
+        if (currentState !is UsersState.Success) return
+        else {
             val lastUserId = currentState.users.lastOrNull()?.id ?: return
             viewModelScope.launch {
                 try {
