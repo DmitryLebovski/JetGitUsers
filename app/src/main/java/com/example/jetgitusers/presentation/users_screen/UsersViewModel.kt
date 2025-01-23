@@ -13,7 +13,6 @@ import com.example.jetgitusers.utils.UsersState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
@@ -29,7 +28,6 @@ class UsersViewModel @Inject constructor(
 
     private val _users = MutableStateFlow<List<User>>(emptyList())
 
-    val token = tokenRepository.getToken()
     private var isLoadingMore = false
 
     fun processIntent(intent: UsersIntent) {
@@ -41,25 +39,21 @@ class UsersViewModel @Inject constructor(
 
     private fun loadUsers() {
         viewModelScope.launch {
-            token.collect { collectedToken ->
-                collectedToken?.let {
-                    _uiState.value = UsersState.Loading
-                    try {
-                        val usersList = repository.getUsers(collectedToken, 1)
-                        val detailedUsers = usersList.map { user ->
-                            val detailedUser = repository.getUserInfo(user.login, collectedToken)
-                            user.copy(followers = detailedUser.followers)
-                        }
-                        _users.value += detailedUsers
-                        _uiState.value = UsersState.Success(users = _users.value, loadMore = false)
-                    } catch (e: IOException) {
-                        Log.d("exeptUs", e.toString())
-                        _uiState.value = UsersState.Error(SYSTEM)
-                    } catch (e: HttpException) {
-                        Log.d("exeptUs", e.toString())
-                        _uiState.value = UsersState.Error(INTERNET)
-                    }
+            _uiState.value = UsersState.Loading
+            try {
+                val usersList = repository.getUsers(1)
+                val detailedUsers = usersList.map { user ->
+                    val detailedUser = repository.getUserInfo(user.login)
+                    user.copy(followers = detailedUser.followers)
                 }
+                _users.value += detailedUsers
+                _uiState.value = UsersState.Success(users = _users.value, loadMore = false)
+            } catch (e: IOException) {
+                Log.d("exeptUs", e.toString())
+                _uiState.value = UsersState.Error(SYSTEM)
+            } catch (e: HttpException) {
+                Log.d("exeptUs", e.toString())
+                _uiState.value = UsersState.Error(INTERNET)
             }
         }
     }
@@ -72,9 +66,9 @@ class UsersViewModel @Inject constructor(
             viewModelScope.launch {
                 try {
                     _uiState.value = currentState.copy(loadMore = true)
-                    val usersList = repository.getUsers(tokenRepository.getToken().first()!!, lastUserId)
+                    val usersList = repository.getUsers(lastUserId)
                     val detailedUsers = usersList.map { user ->
-                        val detailedUser = repository.getUserInfo(user.login, tokenRepository.getToken().first()!!)
+                        val detailedUser = repository.getUserInfo(user.login)
                         user.copy(followers = detailedUser.followers)
                     }
                     _users.value += detailedUsers

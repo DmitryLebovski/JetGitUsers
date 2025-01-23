@@ -16,13 +16,9 @@ fun SplashScreen(
     viewModel: SplashScreenViewModel = hiltViewModel(),
     navigate: (Boolean) -> Unit
 ) {
-    val token = viewModel.getToken().collectAsState(initial = null)
-
-    LaunchedEffect(token.value) {
+    LaunchedEffect(Unit) {
         delay(1000)
-        if (token.value != null) {
-            navigate(true)
-        } else navigate(false)
+        navigate(viewModel.hasToken())
     }
 
     Column (

@@ -43,7 +43,7 @@ class LoginScreenViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _uiState.value = UiState.Loading
-                val userInfo = repository.getAuthorizedUser(token)
+                val userInfo = repository.checkIfUserExist(token)
                 _user.emit(userInfo)
                 _uiState.value = UiState.Success
             } catch (e: HttpException) {

@@ -1,5 +1,6 @@
 package com.example.jetgitusers.presentation.profile_screen
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
@@ -44,23 +45,20 @@ class ProfileScreenViewModel @Inject constructor(
 
     fun getUserData() {
         viewModelScope.launch {
-            getToken().collect { token ->
-                token?.let {
-                    _uiState.value = UiState.Loading
-                    try {
-                        val userInfo = repository.getAuthorizedUser(token)
-                        _user.value = userInfo
-                        _uiState.value  = UiState.Success
-                    } catch (e: IOException) {
-                        _uiState.value  = UiState.Error(AppError.SYSTEM)
-                    } catch (e: HttpException) {
-                        _uiState.value  = UiState.Error(AppError.INTERNET)
-                    }
-                }
+            _uiState.value = UiState.Loading
+            try {
+                val userInfo = repository.getAuthorizedUser()
+                _user.value = userInfo
+                _uiState.value  = UiState.Success
+            } catch (e: IOException) {
+                Log.d("exeptUs", e.toString())
+                _uiState.value  = UiState.Error(AppError.SYSTEM)
+            } catch (e: HttpException) {
+                Log.d("exeptUs", e.toString())
+                _uiState.value  = UiState.Error(AppError.INTERNET)
             }
         }
     }
 
-    fun getToken() = tokenRepository.getToken()
     suspend fun clearToken() = tokenRepository.clearToken()
 }

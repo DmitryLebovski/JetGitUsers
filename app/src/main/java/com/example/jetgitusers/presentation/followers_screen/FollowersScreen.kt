@@ -56,17 +56,15 @@ fun FollowersScreen(
 ){
     
     val context = LocalContext.current
-    val token = viewModel.token.collectAsState(initial = null)
     val uiState by viewModel.uiState.collectAsState()
     val followersList by viewModel.followers.collectAsState()
     
     var page by remember { mutableIntStateOf(1) }
     var isLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = token.value) {
+    LaunchedEffect(Unit) {
         delay(100L)
         viewModel.getUserFollowers(
-            token = token.value.toString(),
             page = page,
             username = username
         )
@@ -148,7 +146,6 @@ fun FollowersScreen(
             page += 1
 
             viewModel.getUserFollowers(
-                token = token.value.toString(),
                 page = page,
                 username = username
             )

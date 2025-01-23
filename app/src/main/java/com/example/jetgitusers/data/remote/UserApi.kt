@@ -8,14 +8,18 @@ import retrofit2.http.Query
 
 interface UserApi {
     @GET("/user")
-    suspend fun getAuthenticatedUser(
+    suspend fun checkIsUserExist(
         @Header("Authorization") authorization: String,
+        @Header("Accept") accept: String = "application/vnd.github+json"
+    ): User
+
+    @GET("/user")
+    suspend fun getAuthenticatedUser(
         @Header("Accept") accept: String = "application/vnd.github+json"
     ): User
 
     @GET("/users")
     suspend fun getUsers(
-        @Header("Authorization") authorization: String,
         @Header("Accept") accept: String = "application/vnd.github+json",
         @Query("per_page") perPage: Int = 30,
         @Query("since") sinceId: Int = 1
@@ -23,14 +27,12 @@ interface UserApi {
 
     @GET("/users/{username}")
     suspend fun getUserInfo(
-        @Header("Authorization") authorization: String,
         @Header("Accept") accept: String = "application/vnd.github+json",
         @Path("username") username: String
     ): User
 
     @GET("/users/{username}/followers")
     suspend fun getUserFollowers(
-        @Header("Authorization") authorization: String,
         @Header("Accept") accept: String = "application/vnd.github+json",
         @Path("username") username: String,
         @Query("per_page") perPage: Int = 30,

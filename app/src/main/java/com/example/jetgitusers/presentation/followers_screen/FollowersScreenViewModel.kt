@@ -29,22 +29,19 @@ class FollowersScreenViewModel @Inject constructor(
     private val _followers = MutableStateFlow<List<User>>(emptyList())
     val followers: StateFlow<List<User>> = _followers
 
-    val token = tokenRepository.getToken()
-
-    fun getUserFollowers(token: String, page: Int, username: String) {
+    fun getUserFollowers(page: Int, username: String) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
             try {
                 val followersList = repository.getUserFollowers(
                     username = username,
-                    page = page,
-                    token = token
+                    page = page
                 )
                 Log.d("FOLLOWERS_ID", followersList.map { it.id }.toString())
 
 
                 val updatedList = followersList.map { user ->
-                    val detailedFollower = repository.getUserInfo(user.login, token)
+                    val detailedFollower = repository.getUserInfo(user.login)
                     user.copy(followers = detailedFollower.followers)
                 }
 
