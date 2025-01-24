@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.example.jetgitusers.BuildConfig
+import com.example.jetgitusers.data.DataStoreManager.customAuthInterceptor
 import com.example.jetgitusers.data.dataStore
 import com.example.jetgitusers.data.remote.UserApi
 import com.example.jetgitusers.data.remote.repository.TokenRepositoryImpl
@@ -15,7 +16,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -40,16 +40,7 @@ object AppModule {
         tokenRepository: TokenRepository
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor { chain ->
-                val token = runBlocking {
-                    tokenRepository.getToken()
-                }
-                val requestBuilder = chain.request().newBuilder()
-                if (!token.isNullOrEmpty()) {
-                    requestBuilder.addHeader("Authorization", "Bearer $token")
-                }
-                chain.proceed(requestBuilder.build())
-            }
+            .addInterceptor(customAuthInterceptor(tokenRepository))
             .build()
     }
 
