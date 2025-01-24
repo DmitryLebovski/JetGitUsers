@@ -28,8 +28,6 @@ class UsersViewModel @Inject constructor(
 
     private val _users = MutableStateFlow<List<User>>(emptyList())
 
-    private var isLoadingMore = false
-
     fun processIntent(intent: UsersIntent) {
         when (intent) {
             is UsersIntent.LoadUsers -> loadUsers()
@@ -79,8 +77,6 @@ class UsersViewModel @Inject constructor(
                 } catch (e: HttpException) {
                     Log.d("exeptUs", e.toString())
                     _uiState.value = UsersState.Error(INTERNET)
-                } finally {
-                    isLoadingMore = false
                 }
             }
         }
