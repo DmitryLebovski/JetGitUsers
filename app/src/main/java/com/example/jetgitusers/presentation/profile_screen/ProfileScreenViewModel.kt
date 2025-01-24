@@ -6,14 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
 import com.example.jetgitusers.domain.repository.TokenRepository
 import com.example.jetgitusers.domain.repository.UserRepository
-import com.example.jetgitusers.utils.AppError
 import com.example.jetgitusers.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,16 +43,16 @@ class ProfileScreenViewModel @Inject constructor(
     fun getUserData() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            try {
-                val userInfo = repository.getAuthorizedUser()
-                _user.value = userInfo
-                _uiState.value  = UiState.Success
-            } catch (e: IOException) {
-                Log.d("exeptUs", e.toString())
-                _uiState.value  = UiState.Error(AppError.SYSTEM)
-            } catch (e: HttpException) {
-                Log.d("exeptUs", e.toString())
-                _uiState.value  = UiState.Error(AppError.INTERNET)
+            val result = repository.getAuthorizedUser()
+            if (result.isSuccess) {
+                result.getOrNull()?.let {
+                    _user.value = it
+                    _uiState.emit(UiState.Success)
+                }
+            } else {
+                val error = result.exceptionOrNull()
+                Log.d("exeptUs", error.toString())
+                _uiState.emit(UiState.Error(error ?: Exception("Неизвестная ошибка")))
             }
         }
     }

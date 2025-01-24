@@ -50,7 +50,7 @@ fun ProfileScreen(
     val user by viewModel.user.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
 
-    when(uiState) {
+    when (uiState) {
         is UiState.Success -> {
             ResultProfileScreen(
                 user = user,
@@ -64,25 +64,30 @@ fun ProfileScreen(
         }
 
         is UiState.Error -> {
-            if ((uiState as UiState.Error).error == AppError.INTERNET) {
-                Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
-                    .show()
-                LaunchedEffect(Unit){
-                    viewModel.clearToken()
-                    navigateIfError()
-                }
-            }
+            val error = (uiState as UiState.Error).error
 
-            if ((uiState as UiState.Error).error == AppError.SYSTEM) {
-                if (!CheckConnection.isInternetAvailable(context)){
-                    ErrorScreen()
-                } else {
-                    viewModel.getUserData()
+            when (error) {
+                is AppError.Internet -> {
+                    Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
+                        .show()
+                    LaunchedEffect(Unit) {
+                        viewModel.clearToken()
+                        navigateIfError()
+                    }
+                }
+
+                is AppError.System -> {
+                    if (!CheckConnection.isInternetAvailable(context)) {
+                        ErrorScreen()
+                    } else {
+                        viewModel.getUserData()
+                    }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun ResultProfileScreen(

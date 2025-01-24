@@ -6,14 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
 import com.example.jetgitusers.domain.repository.TokenRepository
 import com.example.jetgitusers.domain.repository.UserRepository
-import com.example.jetgitusers.utils.AppError
 import com.example.jetgitusers.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,20 +38,17 @@ class LoginScreenViewModel @Inject constructor(
 
     fun checkUserExist(token: String) {
         viewModelScope.launch {
-            try {
-                _uiState.value = UiState.Loading
-                val userInfo = repository.checkIfUserExist(token)
-                _user.emit(userInfo)
-                _uiState.value = UiState.Success
-            } catch (e: HttpException) {
-                Log.d("exeptLogin", e.toString())
-                _uiState.value = UiState.Error(AppError.INTERNET)
-            } catch (e: IOException) {
-                Log.d("exeptLogin", e.toString())
-                _uiState.value = UiState.Error(AppError.SYSTEM)
-            } catch (e: IllegalArgumentException) {
-                Log.d("exeptLogin", e.toString())
-                _uiState.value = UiState.Error(AppError.SYSTEM)
+            _uiState.value = UiState.Loading
+            val result = repository.checkIfUserExist(token)
+            if (result.isSuccess) {
+                result.getOrNull()?.let {
+                    _user.emit(it)
+                    _uiState.emit(UiState.Success)
+                }
+            } else {
+                val error = result.exceptionOrNull()
+                Log.d("exeptUs", error.toString())
+                _uiState.emit(UiState.Error(error ?: Exception("Неизвестная ошибка")))
             }
         }
     }

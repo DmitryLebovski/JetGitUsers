@@ -130,19 +130,22 @@ fun UsersScreen(
         }
         is UsersState.Error -> {
             Log.d("exeptUs", (uiState as UsersState.Error).error.toString())
-            if ((uiState as UsersState.Error).error == AppError.INTERNET) {
-                Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG).show()
-                LaunchedEffect(Unit) {
-                    viewModel.clearToken()
-                    navigateIfError()
+            val error = (uiState as UsersState.Error).error
+            when (error) {
+                is AppError.Internet -> {
+                    Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG).show()
+                    LaunchedEffect(Unit) {
+                        viewModel.clearToken()
+                        navigateIfError()
+                    }
                 }
-            }
 
-            if ((uiState as UsersState.Error).error == AppError.SYSTEM) {
-                if (!CheckConnection.isInternetAvailable(context)){
-                    ErrorScreen()
-                } else {
-                    viewModel.processIntent(UsersIntent.LoadUsers)
+                is AppError.System -> {
+                    if (!CheckConnection.isInternetAvailable(context)){
+                        ErrorScreen()
+                    } else {
+                        viewModel.processIntent(UsersIntent.LoadUsers)
+                    }
                 }
             }
         }

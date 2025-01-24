@@ -39,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetgitusers.R
+import com.example.jetgitusers.presentation.login_screen.ErrorScreen
 import com.example.jetgitusers.reusable_components.ShimmerUserList
 import com.example.jetgitusers.reusable_components.UserCard
 import com.example.jetgitusers.utils.AppError
@@ -58,7 +59,7 @@ fun FollowersScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val followersList by viewModel.followers.collectAsState()
-    
+
     var page by remember { mutableIntStateOf(1) }
     var isLoading by remember { mutableStateOf(false) }
 
@@ -153,12 +154,22 @@ fun FollowersScreen(
         }
     }
 
-    if (uiState == UiState.Error(AppError.SYSTEM)) {
-        Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
-            .show()
-        LaunchedEffect(Unit){
-            viewModel.clearToken()
+    if (uiState is UiState.Error) {
+        val error = (uiState as UiState.Error).error
+
+        when (error) {
+            is AppError.Internet -> {
+                Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
+                    .show()
+                LaunchedEffect(Unit){
+                    viewModel.clearToken()
+                }
+                navigateIfError()
+            }
+
+            is AppError.System -> {
+                ErrorScreen()
+            }
         }
-        navigateIfError()
     }
 }

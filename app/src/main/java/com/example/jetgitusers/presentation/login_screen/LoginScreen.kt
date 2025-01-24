@@ -1,5 +1,6 @@
 package com.example.jetgitusers.presentation.login_screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -52,6 +53,7 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
     var isToastShown by remember { mutableStateOf(false) }
 
+
     if (uiState == UiState.Success) {
         LaunchedEffect(Unit) {
             viewModel.saveToken(token)
@@ -59,19 +61,27 @@ fun LoginScreen(
         }
     }
 
-    if (uiState is UiState.Error && ((uiState as UiState.Error).error == AppError.SYSTEM)) {
-        if (!isToastShown) {
-            Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
-                .show()
-            isToastShown = true
-        }
-    }
+    if (uiState is UiState.Error) {
+        val error = (uiState as UiState.Error).error
 
-    if (uiState is UiState.Error && ((uiState as UiState.Error).error == AppError.INTERNET)) {
-        if (!isToastShown) {
-            Toast.makeText(context, stringResource(R.string.api_failed), Toast.LENGTH_LONG)
-                .show()
-            isToastShown = true
+        when (error) {
+            is AppError.Internet -> {
+                Log.d("exeptUs", error.toString())
+
+                if (!isToastShown) {
+                    Toast.makeText(context, stringResource(R.string.api_failed), Toast.LENGTH_LONG)
+                        .show()
+                    isToastShown = true
+                }
+            }
+
+            is AppError.System -> {
+                if (!isToastShown) {
+                    Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
+                        .show()
+                    isToastShown = true
+                }
+            }
         }
     }
 

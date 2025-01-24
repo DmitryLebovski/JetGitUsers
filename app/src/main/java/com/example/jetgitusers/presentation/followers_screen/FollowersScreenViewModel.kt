@@ -6,15 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
 import com.example.jetgitusers.domain.repository.TokenRepository
 import com.example.jetgitusers.domain.repository.UserRepository
-import com.example.jetgitusers.utils.AppError.INTERNET
-import com.example.jetgitusers.utils.AppError.SYSTEM
 import com.example.jetgitusers.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,28 +28,41 @@ class FollowersScreenViewModel @Inject constructor(
     fun getUserFollowers(page: Int, username: String) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            try {
-                val followersList = repository.getUserFollowers(
-                    username = username,
-                    page = page
-                )
-                Log.d("FOLLOWERS_ID", followersList.map { it.id }.toString())
+            val result = repository.getUserFollowers(
+                username = username,
+                page = page
+            )
 
+            if (result.isSuccess) {
+                result.getOrNull()?.let { userList ->
+                    Log.d("FOLLOWERS_ID", userList.map { it.id }.toString())
 
-                val updatedList = followersList.map { user ->
-                    val detailedFollower = repository.getUserInfo(user.login)
-                    user.copy(followers = detailedFollower.followers)
+                    val updatedList = mutableListOf<User>()
+                    for (user in userList) {
+                        val detailsResult = repository.getUserInfo(user.login)
+                        if (detailsResult.isSuccess) {
+                            detailsResult.getOrNull()?.let { details ->
+                                updatedList.add(user.copy(followers = details.followers))
+                            }
+                        } else {
+                            val error = detailsResult.exceptionOrNull()
+                            Log.d("exeptFollows", error.toString())
+                            _uiState.emit(UiState.Error(error ?: Exception("Неизвестная ошибка")))
+                            return@launch
+                        }
+                    }
+
+                    _followers.emit(_followers.value + updatedList)
+                    _uiState.emit(UiState.Success)
                 }
-
-                _followers.value += updatedList
-                _uiState.value = UiState.Success
-            } catch (e: IOException) {
-                _uiState.value = UiState.Error(SYSTEM)
-            } catch (e: HttpException) {
-                _uiState.value = UiState.Error(INTERNET)
+            } else {
+                val error = result.exceptionOrNull()
+                Log.d("exeptFollows", error.toString())
+                _uiState.emit(UiState.Error(error ?: Exception("Неизвестная ошибка")))
             }
         }
     }
+
 
     suspend fun clearToken() = tokenRepository.clearToken()
 }

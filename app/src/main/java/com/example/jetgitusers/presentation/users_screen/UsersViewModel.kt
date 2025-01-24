@@ -6,16 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.UsersIntent
 import com.example.jetgitusers.domain.repository.TokenRepository
 import com.example.jetgitusers.domain.repository.UserRepository
-import com.example.jetgitusers.utils.AppError.SYSTEM
-import com.example.jetgitusers.utils.AppError.INTERNET
 import com.example.jetgitusers.utils.UsersState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
-import javax.inject.Inject@HiltViewModel
+import javax.inject.Inject
+@HiltViewModel
 
 class UsersViewModel @Inject constructor(
     private val repository: UserRepository,
@@ -35,19 +32,30 @@ class UsersViewModel @Inject constructor(
     private fun loadUsers() {
         viewModelScope.launch {
             _uiState.value = UsersState.Loading
-            try {
-                val usersList = repository.getUsers(1)
-                val detailedUsers = usersList.map { user ->
-                    val detailedUser = repository.getUserInfo(user.login)
-                    user.copy(followers = detailedUser.followers)
+            val result = repository.getUsers(1)
+
+            if (result.isSuccess) {
+                result.getOrNull()?.let { userList ->
+                    val detailedUsers = userList.mapNotNull { user ->
+                        val detailedUserResult = repository.getUserInfo(user.login)
+                        if (detailedUserResult.isSuccess) {
+                            detailedUserResult.getOrNull()?.let { details ->
+                                user.copy(followers = details.followers)
+                            }
+                        } else {
+                            val error = detailedUserResult.exceptionOrNull()
+                            Log.d("exeptFollows", error.toString())
+                            _uiState.emit(UsersState.Error(error ?: Exception("Неизвестная ошибка")))
+                            return@launch
+                        }
+                    }
+
+                    _uiState.emit(UsersState.Success(users = detailedUsers, loadMore = false))
                 }
-                _uiState.value = UsersState.Success(users = detailedUsers, loadMore = false)
-            } catch (e: IOException) {
-                Log.d("exeptUs", e.toString())
-                _uiState.value = UsersState.Error(SYSTEM)
-            } catch (e: HttpException) {
-                Log.d("exeptUs", e.toString())
-                _uiState.value = UsersState.Error(INTERNET)
+            } else {
+                val error = result.exceptionOrNull()
+                Log.d("exeptFollows", error.toString())
+                _uiState.emit(UsersState.Error(error ?: Exception("Неизвестная ошибка")))
             }
         }
     }
@@ -58,20 +66,31 @@ class UsersViewModel @Inject constructor(
         else {
             val lastUserId = currentState.users.lastOrNull()?.id ?: return
             viewModelScope.launch {
-                try {
-                    _uiState.value = currentState.copy(loadMore = true)
-                    val usersList = repository.getUsers(lastUserId)
-                    val detailedUsers = usersList.map { user ->
-                        val detailedUser = repository.getUserInfo(user.login)
-                        user.copy(followers = detailedUser.followers)
+                _uiState.value = currentState.copy(loadMore = true)
+                val result = repository.getUsers(lastUserId)
+
+                if (result.isSuccess) {
+                    result.getOrNull()?.let { userList ->
+                        val detailedUsers = userList.mapNotNull { user ->
+                            val detailedUserResult = repository.getUserInfo(user.login)
+                            if (detailedUserResult.isSuccess) {
+                                detailedUserResult.getOrNull()?.let { details ->
+                                    user.copy(followers = details.followers)
+                                }
+                            } else {
+                                val error = detailedUserResult.exceptionOrNull()
+                                Log.d("exeptFollows", error.toString())
+                                _uiState.emit(UsersState.Error(error ?: Exception("Неизвестная ошибка")))
+                                return@launch
+                            }
+                        }
+
+                        _uiState.emit(UsersState.Success(users = currentState.users + detailedUsers, loadMore = false))
                     }
-                    _uiState.value = UsersState.Success(users = currentState.users + detailedUsers, loadMore = false)
-                } catch (e: IOException) {
-                    Log.d("exeptUs", e.toString())
-                    _uiState.value = UsersState.Error(SYSTEM)
-                } catch (e: HttpException) {
-                    Log.d("exeptUs", e.toString())
-                    _uiState.value = UsersState.Error(INTERNET)
+                } else {
+                    val error = result.exceptionOrNull()
+                    Log.d("exeptFollows", error.toString())
+                    _uiState.emit(UsersState.Error(error ?: Exception("Неизвестная ошибка")))
                 }
             }
         }
