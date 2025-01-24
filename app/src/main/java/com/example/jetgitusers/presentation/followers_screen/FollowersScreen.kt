@@ -39,7 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetgitusers.R
-import com.example.jetgitusers.presentation.login_screen.LoadingScreen
+import com.example.jetgitusers.reusable_components.ShimmerUserList
 import com.example.jetgitusers.reusable_components.UserCard
 import com.example.jetgitusers.utils.AppError
 import com.example.jetgitusers.utils.UiState
@@ -78,7 +78,7 @@ fun FollowersScreen(
     val itemCount = layoutInfo.totalItemsCount
 
     if (uiState == UiState.Loading && followersList.isEmpty()) {
-        LoadingScreen()
+        ShimmerUserList()
     } else {
         Scaffold (
             topBar =  {

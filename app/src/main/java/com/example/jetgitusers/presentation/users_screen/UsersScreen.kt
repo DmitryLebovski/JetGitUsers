@@ -4,11 +4,12 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -31,7 +32,7 @@ import androidx.navigation.NavController
 import com.example.jetgitusers.R
 import com.example.jetgitusers.domain.UsersIntent
 import com.example.jetgitusers.presentation.login_screen.ErrorScreen
-import com.example.jetgitusers.presentation.login_screen.LoadingScreen
+import com.example.jetgitusers.reusable_components.ShimmerUserList
 import com.example.jetgitusers.reusable_components.UserCard
 import com.example.jetgitusers.utils.AppError
 import com.example.jetgitusers.utils.CheckConnection
@@ -68,44 +69,62 @@ fun UsersScreen(
     val isLoadMore = (uiState as? UsersState.Success)?.loadMore == true
 
     when (uiState) {
-        is UsersState.Loading -> LoadingScreen()
+        is UsersState.Loading -> ShimmerUserList()
         is UsersState.Success -> {
             val usersList = (uiState as UsersState.Success).users
-            LazyColumn(
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
                     .background(color = colorResource(R.color.light_grey))
                     .padding(vertical = 4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                state = lazyListState
-            ) {
-                items(usersList) { user ->
-                    UserCard(
-                        login = user.login,
-                        avatarUrl = user.avatar_url,
-                        followers = user.followers,
-                        onClick = {
-                            navController.navigate("$FOLLOWERS_SCREEN/${user.login}")
-                        }
-                    )
-                }
-                item {
-                    if (isLoadMore && CheckConnection.isInternetAvailable(context)) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(40.dp),
-                            contentAlignment = Alignment.BottomCenter
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    } else if (!CheckConnection.isInternetAvailable(context)) {
-                        Text(
-                            text = stringResource(R.string.connection_failed),
-                            modifier = Modifier.padding(16.dp)
+            )  {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    state = lazyListState
+                ) {
+                    items(usersList) { user ->
+                        UserCard(
+                            login = user.login,
+                            avatarUrl = user.avatar_url,
+                            followers = user.followers,
+                            onClick = {
+                                navController.navigate("$FOLLOWERS_SCREEN/${user.login}")
+                            }
                         )
                     }
+                }
+
+                if (isLoadMore && CheckConnection.isInternetAvailable(context)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.more_users_loading),
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .align(Alignment.CenterVertically)
+                        )
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .align(Alignment.CenterVertically)
+                                .padding(end = 8.dp)
+                        )
+                    }
+                } else if (!CheckConnection.isInternetAvailable(context)) {
+                    Text(
+                        text = stringResource(R.string.connection_failed),
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
             }
         }

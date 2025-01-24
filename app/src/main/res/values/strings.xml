@@ -22,4 +22,5 @@
     <string name="wrong_token_pattern">Wrong token pattern!</string>
     <string name="token_error">Token error</string>
     <string name="back">Back</string>
+    <string name="more_users_loading">Wait, more users are loading</string>
 </resources>

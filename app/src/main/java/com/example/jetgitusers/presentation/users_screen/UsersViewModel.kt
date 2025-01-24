@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.UsersIntent
-import com.example.jetgitusers.domain.model.User
 import com.example.jetgitusers.domain.repository.TokenRepository
 import com.example.jetgitusers.domain.repository.UserRepository
 import com.example.jetgitusers.utils.AppError.SYSTEM
@@ -26,8 +25,6 @@ class UsersViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<UsersState>(UsersState.Loading)
     val uiState: StateFlow<UsersState> = _uiState
 
-    private val _users = MutableStateFlow<List<User>>(emptyList())
-
     fun processIntent(intent: UsersIntent) {
         when (intent) {
             is UsersIntent.LoadUsers -> loadUsers()
@@ -44,8 +41,7 @@ class UsersViewModel @Inject constructor(
                     val detailedUser = repository.getUserInfo(user.login)
                     user.copy(followers = detailedUser.followers)
                 }
-                _users.value += detailedUsers
-                _uiState.value = UsersState.Success(users = _users.value, loadMore = false)
+                _uiState.value = UsersState.Success(users = detailedUsers, loadMore = false)
             } catch (e: IOException) {
                 Log.d("exeptUs", e.toString())
                 _uiState.value = UsersState.Error(SYSTEM)
@@ -69,8 +65,7 @@ class UsersViewModel @Inject constructor(
                         val detailedUser = repository.getUserInfo(user.login)
                         user.copy(followers = detailedUser.followers)
                     }
-                    _users.value += detailedUsers
-                    _uiState.value = UsersState.Success(users = _users.value, loadMore = false)
+                    _uiState.value = UsersState.Success(users = currentState.users + detailedUsers, loadMore = false)
                 } catch (e: IOException) {
                     Log.d("exeptUs", e.toString())
                     _uiState.value = UsersState.Error(SYSTEM)
