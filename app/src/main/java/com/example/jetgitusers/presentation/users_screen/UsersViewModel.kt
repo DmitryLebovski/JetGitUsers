@@ -10,6 +10,7 @@ import com.example.jetgitusers.utils.UsersState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 @HiltViewModel
@@ -31,32 +32,19 @@ class UsersViewModel @Inject constructor(
 
     private fun loadUsers() {
         viewModelScope.launch {
-            _uiState.value = UsersState.Loading
-            val result = repository.getUsers(1)
+            _uiState.update { UsersState.Loading }
 
-            if (result.isSuccess) {
-                result.getOrNull()?.let { userList ->
-                    val detailedUsers = userList.mapNotNull { user ->
-                        val detailedUserResult = repository.getUserInfo(user.login)
-                        if (detailedUserResult.isSuccess) {
-                            detailedUserResult.getOrNull()?.let { details ->
-                                user.copy(followers = details.followers)
-                            }
-                        } else {
-                            val error = detailedUserResult.exceptionOrNull()
-                            Log.d("exeptFollows", error.toString())
-                            _uiState.emit(UsersState.Error(error ?: Exception("Неизвестная ошибка")))
-                            return@launch
-                        }
+            repository.getUsers(since = 1)
+                .onFailure { _uiState.emit(UsersState.Error(it)) }
+                .onSuccess { userList ->
+                    val detailedUsers = userList.map { user ->
+                        repository.getUserInfo(user.login).getOrNull()?.let {
+                            user.copy(followers = it.followers)
+                        } ?: user
                     }
 
-                    _uiState.emit(UsersState.Success(users = detailedUsers, loadMore = false))
+                    _uiState.update { UsersState.Success(users = detailedUsers, loadMore = false) }
                 }
-            } else {
-                val error = result.exceptionOrNull()
-                Log.d("exeptFollows", error.toString())
-                _uiState.emit(UsersState.Error(error ?: Exception("Неизвестная ошибка")))
-            }
         }
     }
 
