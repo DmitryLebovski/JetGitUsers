@@ -1,12 +1,16 @@
 package com.example.jetgitusers.presentation.splash_screen
 
 import androidx.lifecycle.ViewModel
+import com.example.jetgitusers.domain.repository.TokenRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class SplashScreenViewModel @Inject constructor(
-    private val token: String?
+    private val tokenRepository: TokenRepository
 ) : ViewModel() {
-    fun hasToken(): Boolean = !token.isNullOrEmpty()
+    
+    suspend fun hasToken(): Boolean {
+        return !tokenRepository.getToken().isNullOrEmpty()
+    }
 }

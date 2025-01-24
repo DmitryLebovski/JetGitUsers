@@ -68,14 +68,4 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> = context.dataStore
-
-    @Provides
-    @Singleton
-    fun provideStoredTokenOrNull(
-        tokenRepository: TokenRepository
-    ): String? {
-        return runBlocking {
-            tokenRepository.getToken()
-        }
-    }
 }
