@@ -1,6 +1,5 @@
 package com.example.jetgitusers.presentation.users_screen
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.UsersIntent
@@ -34,8 +33,8 @@ class UsersViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { UsersState.Loading }
 
-            repository.getUsers(since = 1)
-                .onFailure { _uiState.emit(UsersState.Error(it)) }
+            repository.getUsers(since = 0)
+                .onFailure { throwable -> _uiState.update { UsersState.Error(throwable) }}
                 .onSuccess { userList ->
                     val detailedUsers = userList.map { user ->
                         repository.getUserInfo(user.login).getOrNull()?.let {
@@ -54,32 +53,18 @@ class UsersViewModel @Inject constructor(
         else {
             val lastUserId = currentState.users.lastOrNull()?.id ?: return
             viewModelScope.launch {
-                _uiState.value = currentState.copy(loadMore = true)
-                val result = repository.getUsers(lastUserId)
+                _uiState.update { currentState.copy(loadMore = true) }
 
-                if (result.isSuccess) {
-                    result.getOrNull()?.let { userList ->
-                        val detailedUsers = userList.mapNotNull { user ->
-                            val detailedUserResult = repository.getUserInfo(user.login)
-                            if (detailedUserResult.isSuccess) {
-                                detailedUserResult.getOrNull()?.let { details ->
-                                    user.copy(followers = details.followers)
-                                }
-                            } else {
-                                val error = detailedUserResult.exceptionOrNull()
-                                Log.d("exeptFollows", error.toString())
-                                _uiState.emit(UsersState.Error(error ?: Exception("Неизвестная ошибка")))
-                                return@launch
-                            }
+                repository.getUsers(lastUserId)
+                    .onFailure { _uiState.emit(UsersState.Error(it)) }
+                    .onSuccess { userList ->
+                        val detailedUsers = userList.map { user ->
+                            repository.getUserInfo(user.login).getOrNull()?.let {
+                                user.copy(followers = it.followers)
+                            } ?: user
                         }
-
-                        _uiState.emit(UsersState.Success(users = currentState.users + detailedUsers, loadMore = false))
+                        _uiState.update { UsersState.Success(users = currentState.users + detailedUsers, loadMore = false) }
                     }
-                } else {
-                    val error = result.exceptionOrNull()
-                    Log.d("exeptFollows", error.toString())
-                    _uiState.emit(UsersState.Error(error ?: Exception("Неизвестная ошибка")))
-                }
             }
         }
     }

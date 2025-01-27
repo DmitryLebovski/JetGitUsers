@@ -10,6 +10,7 @@ import com.example.jetgitusers.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,39 +28,24 @@ class FollowersScreenViewModel @Inject constructor(
 
     fun getUserFollowers(page: Int, username: String) {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            val result = repository.getUserFollowers(
+            _uiState.update { UiState.Loading }
+            repository.getUserFollowers(
                 username = username,
                 page = page
             )
+                .onFailure { throwable -> _uiState.update { UiState.Error(throwable) } }
+                .onSuccess { followerList ->
+                    Log.d("FOLLOWERS_ID", followerList.map { it.id }.toString())
 
-            if (result.isSuccess) {
-                result.getOrNull()?.let { userList ->
-                    Log.d("FOLLOWERS_ID", userList.map { it.id }.toString())
-
-                    val updatedList = mutableListOf<User>()
-                    for (user in userList) {
-                        val detailsResult = repository.getUserInfo(user.login)
-                        if (detailsResult.isSuccess) {
-                            detailsResult.getOrNull()?.let { details ->
-                                updatedList.add(user.copy(followers = details.followers))
-                            }
-                        } else {
-                            val error = detailsResult.exceptionOrNull()
-                            Log.d("exeptFollows", error.toString())
-                            _uiState.emit(UiState.Error(error ?: Exception("Неизвестная ошибка")))
-                            return@launch
-                        }
+                    val detailedUsers = followerList.map { user ->
+                        repository.getUserInfo(user.login).getOrNull()?.let {
+                            user.copy(followers = it.followers)
+                        } ?: user
                     }
 
-                    _followers.emit(_followers.value + updatedList)
-                    _uiState.emit(UiState.Success)
+                    _followers.update { _followers.value + detailedUsers }
+                    _uiState.update { UiState.Success }
                 }
-            } else {
-                val error = result.exceptionOrNull()
-                Log.d("exeptFollows", error.toString())
-                _uiState.emit(UiState.Error(error ?: Exception("Неизвестная ошибка")))
-            }
         }
     }
 

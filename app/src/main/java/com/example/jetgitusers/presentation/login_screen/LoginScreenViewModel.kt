@@ -1,6 +1,5 @@
 package com.example.jetgitusers.presentation.login_screen
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
@@ -10,6 +9,7 @@ import com.example.jetgitusers.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,18 +38,13 @@ class LoginScreenViewModel @Inject constructor(
 
     fun checkUserExist(token: String) {
         viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            val result = repository.checkIfUserExist(token)
-            if (result.isSuccess) {
-                result.getOrNull()?.let {
-                    _user.emit(it)
-                    _uiState.emit(UiState.Success)
+            _uiState.update { UiState.Loading }
+            repository.checkIfUserExist(token)
+                .onFailure { throwable -> _uiState.update { UiState.Error(throwable) } }
+                .onSuccess {
+                    _user.update { it }
+                    _uiState.update { UiState.Success }
                 }
-            } else {
-                val error = result.exceptionOrNull()
-                Log.d("exeptUs", error.toString())
-                _uiState.emit(UiState.Error(error ?: Exception("Неизвестная ошибка")))
-            }
         }
     }
 
