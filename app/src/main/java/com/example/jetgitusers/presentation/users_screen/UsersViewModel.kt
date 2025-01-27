@@ -36,13 +36,9 @@ class UsersViewModel @Inject constructor(
             repository.getUsers(since = 0)
                 .onFailure { throwable -> _uiState.update { UsersState.Error(throwable) }}
                 .onSuccess { userList ->
-                    val detailedUsers = userList.map { user ->
-                        repository.getUserInfo(user.login).getOrNull()?.let {
-                            user.copy(followers = it.followers)
-                        } ?: user
+                    _uiState.update {
+                        UsersState.Success(users = userList, loadMore = false)
                     }
-
-                    _uiState.update { UsersState.Success(users = detailedUsers, loadMore = false) }
                 }
         }
     }
@@ -58,12 +54,9 @@ class UsersViewModel @Inject constructor(
                 repository.getUsers(lastUserId)
                     .onFailure { _uiState.emit(UsersState.Error(it)) }
                     .onSuccess { userList ->
-                        val detailedUsers = userList.map { user ->
-                            repository.getUserInfo(user.login).getOrNull()?.let {
-                                user.copy(followers = it.followers)
-                            } ?: user
+                        _uiState.update {
+                            UsersState.Success(users = currentState.users + userList, loadMore = false)
                         }
-                        _uiState.update { UsersState.Success(users = currentState.users + detailedUsers, loadMore = false) }
                     }
             }
         }

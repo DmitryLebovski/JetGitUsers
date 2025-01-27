@@ -25,7 +25,7 @@ fun ShimmerUserList() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        repeat(9) { index ->
+        repeat(9) {
             ShimmerUserCard()
         }
     }

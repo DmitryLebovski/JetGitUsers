@@ -36,14 +36,7 @@ class FollowersScreenViewModel @Inject constructor(
                 .onFailure { throwable -> _uiState.update { UiState.Error(throwable) } }
                 .onSuccess { followerList ->
                     Log.d("FOLLOWERS_ID", followerList.map { it.id }.toString())
-
-                    val detailedUsers = followerList.map { user ->
-                        repository.getUserInfo(user.login).getOrNull()?.let {
-                            user.copy(followers = it.followers)
-                        } ?: user
-                    }
-
-                    _followers.update { _followers.value + detailedUsers }
+                    _followers.update { _followers.value + followerList }
                     _uiState.update { UiState.Success }
                 }
         }

@@ -47,7 +47,12 @@ class UserRepositoryImpl(
             val response = api.getUsers(sinceId = since)
             if (response.isSuccessful) {
                 val users = response.body()?.let { mapDtoToUsers(it) } ?: emptyList()
-                Result.success(users)
+                val detailedUsers = users.map { user ->
+                    getUserInfo(user.login).getOrNull()?.let {
+                        user.copy(followers = it.followers)
+                    } ?: user
+                }
+                Result.success(detailedUsers)
             } else {
                 val error = AppError.Internet(
                     httpCode = response.code(),
@@ -64,7 +69,13 @@ class UserRepositoryImpl(
             val response = api.getUserFollowers(username = username, page = page)
             if (response.isSuccessful) {
                 val users = response.body()?.let { mapDtoToUsers(it) } ?: emptyList()
-                Result.success(users)
+                val detailedUsers = users.map { user ->
+                    getUserInfo(user.login).getOrNull()?.let {
+                        user.copy(followers = it.followers)
+                    } ?: user
+                }
+
+                Result.success(detailedUsers)
             } else {
                 val error = AppError.Internet(
                     httpCode = response.code(),
