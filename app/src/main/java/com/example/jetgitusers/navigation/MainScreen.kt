@@ -1,13 +1,14 @@
-package com.example.jetgitusers.presentation.main_screens
+package com.example.jetgitusers.navigation
 
 import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat.getColor
-import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,20 +20,31 @@ import com.example.jetgitusers.presentation.profile_screen.ProfileScreen
 import com.example.jetgitusers.presentation.users_screen.UsersScreen
 import com.example.jetgitusers.tools.BottomBar
 import com.example.jetgitusers.utils.Routes.FOLLOWERS_SCREEN
-import com.example.jetgitusers.utils.Routes.LOGIN_SCREEN
 import com.example.jetgitusers.utils.Routes.PROFILE_SCREEN
 import com.example.jetgitusers.utils.Routes.USERS_SCREEN
+import kotlinx.coroutines.flow.map
 
 @Composable
-fun MainScreens(
+fun MainScreen(
     enableEdgeToEdge: (SystemBarStyle) -> Unit,
-    parentNavController: NavController
+    navigateToLogin: () -> Unit
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val currentRoute by navController.currentBackStackEntryFlow
+        .map { it.destination.route }
+        .collectAsState(initial = USERS_SCREEN)
 
     Scaffold(
-        bottomBar = { BottomBar(navController) }
+        bottomBar = { BottomBar(
+            currentRoute = currentRoute,
+            navigateToUsers = {
+                navController.navigate(USERS_SCREEN)
+            },
+            navigateToProfile = {
+                navController.navigate(PROFILE_SCREEN)
+            }
+        ) }
     ) { paddingValues ->
         NavHost(
             navController = navController,
@@ -47,11 +59,7 @@ fun MainScreens(
                     )
                 )
                 UsersScreen(
-                    navigateIfError = {
-                        parentNavController.navigate(LOGIN_SCREEN) {
-                            popUpTo(USERS_SCREEN) { inclusive = true }
-                        }
-                    },
+                    navigateIfError = navigateToLogin,
                     navController
                 )
             }
@@ -69,11 +77,7 @@ fun MainScreens(
                 )
                 FollowersScreen(
                     username = username,
-                    navigateIfError = {
-                        parentNavController.navigate(LOGIN_SCREEN) {
-                            popUpTo(FOLLOWERS_SCREEN) { inclusive = true }
-                        }
-                    },
+                    navigateIfError = navigateToLogin,
                     navigateToFollowers = { nextUser ->
                         navController.navigate("$FOLLOWERS_SCREEN/$nextUser")
                     },
@@ -85,11 +89,7 @@ fun MainScreens(
 
             composable(PROFILE_SCREEN) {
                 ProfileScreen(
-                    navigate = {
-                        parentNavController.navigate(LOGIN_SCREEN) {
-                            popUpTo(PROFILE_SCREEN) { inclusive = true }
-                        }
-                    }
+                    navigateIfError = navigateToLogin,
                 )
             }
         }

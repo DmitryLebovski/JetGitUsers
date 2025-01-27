@@ -1,5 +1,6 @@
 package com.example.jetgitusers.presentation.login_screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,6 +19,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +40,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetgitusers.R
 import com.example.jetgitusers.reusable_components.GithubCard
-import com.example.jetgitusers.utils.UsersUiState
+import com.example.jetgitusers.utils.AppError
+import com.example.jetgitusers.utils.UiState
 
 @Composable
 fun LoginScreen(
@@ -47,25 +50,37 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     var token by remember { mutableStateOf("") }
-    val uiState = viewModel.usersUiState
+    val uiState by viewModel.uiState.collectAsState()
     var isToastShown by remember { mutableStateOf(false) }
 
-    when(uiState) {
-        UsersUiState.Success -> {
-            LaunchedEffect(Unit) {
-                viewModel.saveToken(token)
-                navigate()
+
+    if (uiState == UiState.Success) {
+        LaunchedEffect(Unit) {
+            viewModel.saveToken(token)
+            navigate()
+        }
+    }
+
+    if (uiState is UiState.Error) {
+        val error = (uiState as UiState.Error).error
+
+        when (error) {
+            is AppError.Internet -> {
+                Log.d("exeptUs", error.toString())
+
+                if (!isToastShown) {
+                    Toast.makeText(context, stringResource(R.string.api_failed), Toast.LENGTH_LONG)
+                        .show()
+                    isToastShown = true
+                }
             }
-        }
 
-        UsersUiState.Loading -> {
-        }
-
-        UsersUiState.Error -> {
-            if (!isToastShown) {
-                Toast.makeText(context, stringResource(R.string.user_not_found), Toast.LENGTH_LONG)
-                    .show()
-                isToastShown = true
+            is AppError.System -> {
+                if (!isToastShown) {
+                    Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
+                        .show()
+                    isToastShown = true
+                }
             }
         }
     }
@@ -164,7 +179,7 @@ fun LoadingScreen() {
 
 @Composable
 fun ErrorScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column (
         modifier = modifier.fillMaxSize(),
@@ -176,7 +191,7 @@ fun ErrorScreen(
             contentDescription = ""
         )
         Text(
-            text = stringResource(id = R.string.loading_failed),
+            text = stringResource(id = R.string.connection_failed),
             modifier = Modifier.padding(16.dp)
         )
     }

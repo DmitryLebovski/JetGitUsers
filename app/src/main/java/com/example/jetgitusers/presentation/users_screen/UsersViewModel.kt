@@ -1,53 +1,66 @@
 package com.example.jetgitusers.presentation.users_screen
 
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetgitusers.domain.model.User
-import com.example.jetgitusers.domain.repository.UserRepository
-import com.example.jetgitusers.utils.UsersUiState
+import com.example.jetgitusers.domain.UsersIntent
+import com.example.jetgitusers.domain.usecase.ClearTokenUseCase
+import com.example.jetgitusers.domain.usecase.GetUsersUseCase
+import com.example.jetgitusers.utils.UsersState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import javax.inject.Inject
-
 @HiltViewModel
+
 class UsersViewModel @Inject constructor(
-    private val repository: UserRepository
+    private val getUsersUseCase: GetUsersUseCase,
+    private val clearTokenUseCase: ClearTokenUseCase
 ) : ViewModel() {
-    var usersUiState: UsersUiState by mutableStateOf(UsersUiState.Loading)
-        private set
 
-    private val _users = MutableStateFlow<List<User>>(emptyList())
-    val users: StateFlow<List<User>> = _users
+    private val _uiState = MutableStateFlow<UsersState>(UsersState.Loading)
+    val uiState: StateFlow<UsersState> = _uiState
 
-    val token = repository.getToken()
+    fun processIntent(intent: UsersIntent) {
+        when (intent) {
+            is UsersIntent.LoadUsers -> loadUsers()
+            is UsersIntent.LoadMoreUsers -> loadMoreUsers()
+        }
+    }
 
-    fun getUsers(token: String, since: Int) {
+    private fun loadUsers() {
         viewModelScope.launch {
-            usersUiState = UsersUiState.Loading
-            try {
-                val usersList = repository.getUsers(token, since)
-                Log.d("USER_ID", usersList.map { it.id }.toString())
+            _uiState.update { UsersState.Loading }
 
-
-                val updatedList = usersList.map { user ->
-                    val detailedUser = repository.getUserInfo(user.login, token)
-                    user.copy(followers = detailedUser.followers)
+            getUsersUseCase(since = 0)
+                .onFailure { throwable -> _uiState.update { UsersState.Error(throwable) }}
+                .onSuccess { userList ->
+                    _uiState.update {
+                        UsersState.Success(users = userList, loadMore = false)
+                    }
                 }
+        }
+    }
 
-                _users.value += updatedList
-                usersUiState = UsersUiState.Success
-            } catch (e: HttpException) {
-                usersUiState = UsersUiState.Error
+    private fun loadMoreUsers() {
+        val currentState = _uiState.value
+        if (currentState !is UsersState.Success) return
+        else {
+            val lastUserId = currentState.users.lastOrNull()?.id ?: return
+            viewModelScope.launch {
+                _uiState.update { currentState.copy(loadMore = true) }
+
+                getUsersUseCase(lastUserId)
+                    .onFailure { _uiState.emit(UsersState.Error(it)) }
+                    .onSuccess { userList ->
+                        _uiState.update {
+                            UsersState.Success(users = currentState.users + userList, loadMore = false)
+                        }
+                    }
             }
         }
     }
 
-    suspend fun clearToken() = repository.clearToken()
+    suspend fun clearToken() = clearTokenUseCase()
 }
