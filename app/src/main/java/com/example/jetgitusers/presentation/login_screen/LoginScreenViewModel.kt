@@ -3,8 +3,8 @@ package com.example.jetgitusers.presentation.login_screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
-import com.example.jetgitusers.domain.repository.TokenRepository
-import com.example.jetgitusers.domain.repository.UserRepository
+import com.example.jetgitusers.domain.usecase.CheckIfUserExistUseCase
+import com.example.jetgitusers.domain.usecase.SaveTokenUseCase
 import com.example.jetgitusers.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,8 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginScreenViewModel @Inject constructor(
-    private val repository: UserRepository,
-    private val tokenRepository: TokenRepository
+    private val checkIfUserExistUseCase: CheckIfUserExistUseCase,
+    private val saveTokenUseCase: SaveTokenUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
@@ -39,7 +39,7 @@ class LoginScreenViewModel @Inject constructor(
     fun checkUserExist(token: String) {
         viewModelScope.launch {
             _uiState.update { UiState.Loading }
-            repository.checkIfUserExist(token)
+            checkIfUserExistUseCase(token)
                 .onFailure { throwable -> _uiState.update { UiState.Error(throwable) } }
                 .onSuccess {
                     _user.update { it }
@@ -48,5 +48,5 @@ class LoginScreenViewModel @Inject constructor(
         }
     }
 
-    suspend fun saveToken(token: String) = tokenRepository.saveToken(token)
+    suspend fun saveToken(token: String) = saveTokenUseCase(token)
 }

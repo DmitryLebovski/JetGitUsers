@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
-import com.example.jetgitusers.domain.repository.TokenRepository
-import com.example.jetgitusers.domain.repository.UserRepository
+import com.example.jetgitusers.domain.usecase.ClearTokenUseCase
+import com.example.jetgitusers.domain.usecase.GetUserFollowersUseCase
 import com.example.jetgitusers.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FollowersScreenViewModel @Inject constructor(
-    private val repository: UserRepository,
-    private val tokenRepository: TokenRepository
+    private val getUserFollowersUseCase: GetUserFollowersUseCase,
+    private val clearTokenUseCase: ClearTokenUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
@@ -29,7 +29,7 @@ class FollowersScreenViewModel @Inject constructor(
     fun getUserFollowers(page: Int, username: String) {
         viewModelScope.launch {
             _uiState.update { UiState.Loading }
-            repository.getUserFollowers(
+            getUserFollowersUseCase(
                 username = username,
                 page = page
             )
@@ -43,5 +43,5 @@ class FollowersScreenViewModel @Inject constructor(
     }
 
 
-    suspend fun clearToken() = tokenRepository.clearToken()
+    suspend fun clearToken() = clearTokenUseCase()
 }

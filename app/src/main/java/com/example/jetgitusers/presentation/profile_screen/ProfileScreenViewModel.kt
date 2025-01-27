@@ -3,8 +3,8 @@ package com.example.jetgitusers.presentation.profile_screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.model.User
-import com.example.jetgitusers.domain.repository.TokenRepository
-import com.example.jetgitusers.domain.repository.UserRepository
+import com.example.jetgitusers.domain.usecase.ClearTokenUseCase
+import com.example.jetgitusers.domain.usecase.GetAuthUserUseCase
 import com.example.jetgitusers.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,8 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileScreenViewModel @Inject constructor(
-    private val repository: UserRepository,
-    private val tokenRepository: TokenRepository
+    private val getAuthUserUseCase: GetAuthUserUseCase,
+    private val clearTokenUseCase: ClearTokenUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
@@ -43,7 +43,7 @@ class ProfileScreenViewModel @Inject constructor(
     fun getUserData() {
         viewModelScope.launch {
             _uiState.update { UiState.Loading }
-            repository.getAuthorizedUser()
+            getAuthUserUseCase()
                 .onFailure { throwable -> _uiState.update { UiState.Error(throwable) }}
                 .onSuccess {
                     _user.emit(it)
@@ -52,5 +52,5 @@ class ProfileScreenViewModel @Inject constructor(
         }
     }
 
-    suspend fun clearToken() = tokenRepository.clearToken()
+    suspend fun clearToken() = clearTokenUseCase()
 }

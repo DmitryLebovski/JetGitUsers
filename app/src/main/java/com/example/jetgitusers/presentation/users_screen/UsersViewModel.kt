@@ -3,8 +3,8 @@ package com.example.jetgitusers.presentation.users_screen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetgitusers.domain.UsersIntent
-import com.example.jetgitusers.domain.repository.TokenRepository
-import com.example.jetgitusers.domain.repository.UserRepository
+import com.example.jetgitusers.domain.usecase.ClearTokenUseCase
+import com.example.jetgitusers.domain.usecase.GetUsersUseCase
 import com.example.jetgitusers.utils.UsersState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,8 +15,8 @@ import javax.inject.Inject
 @HiltViewModel
 
 class UsersViewModel @Inject constructor(
-    private val repository: UserRepository,
-    private val tokenRepository: TokenRepository
+    private val getUsersUseCase: GetUsersUseCase,
+    private val clearTokenUseCase: ClearTokenUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UsersState>(UsersState.Loading)
@@ -33,7 +33,7 @@ class UsersViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { UsersState.Loading }
 
-            repository.getUsers(since = 0)
+            getUsersUseCase(since = 0)
                 .onFailure { throwable -> _uiState.update { UsersState.Error(throwable) }}
                 .onSuccess { userList ->
                     _uiState.update {
@@ -51,7 +51,7 @@ class UsersViewModel @Inject constructor(
             viewModelScope.launch {
                 _uiState.update { currentState.copy(loadMore = true) }
 
-                repository.getUsers(lastUserId)
+                getUsersUseCase(lastUserId)
                     .onFailure { _uiState.emit(UsersState.Error(it)) }
                     .onSuccess { userList ->
                         _uiState.update {
@@ -62,5 +62,5 @@ class UsersViewModel @Inject constructor(
         }
     }
 
-    suspend fun clearToken() = tokenRepository.clearToken()
+    suspend fun clearToken() = clearTokenUseCase()
 }

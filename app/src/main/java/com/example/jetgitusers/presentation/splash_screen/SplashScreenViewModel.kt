@@ -2,7 +2,7 @@ package com.example.jetgitusers.presentation.splash_screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetgitusers.domain.repository.UserRepository
+import com.example.jetgitusers.domain.usecase.GetAuthUserUseCase
 import com.example.jetgitusers.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SplashScreenViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val getAuthUserUseCase: GetAuthUserUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
@@ -27,7 +27,7 @@ class SplashScreenViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { UiState.Loading }
 
-            userRepository.getAuthorizedUser()
+            getAuthUserUseCase()
                 .onFailure { throwable -> _uiState.update { UiState.Error(throwable) }}
                 .onSuccess { _uiState.update { UiState.Success }}
         }
