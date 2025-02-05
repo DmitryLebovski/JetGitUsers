@@ -64,7 +64,7 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    implementation(libs.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -81,6 +81,10 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     annotationProcessor(libs.hilt.compiler)
     kapt(libs.hilt.compiler)
+    implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.animation.core)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.swiperefreshlayout)
 
     implementation(libs.accompanist.systemuicontroller)
 

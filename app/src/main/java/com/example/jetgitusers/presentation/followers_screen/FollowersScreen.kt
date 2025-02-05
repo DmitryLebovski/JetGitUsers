@@ -3,16 +3,18 @@ package com.example.jetgitusers.presentation.followers_screen
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -21,14 +23,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,13 +39,15 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.jetgitusers.R
 import com.example.jetgitusers.presentation.login_screen.ErrorScreen
 import com.example.jetgitusers.reusable_components.ShimmerUserList
 import com.example.jetgitusers.reusable_components.UserCard
-import com.example.jetgitusers.utils.AppError
-import com.example.jetgitusers.utils.UiState
+import com.example.jetgitusers.utils.CheckConnection
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,121 +58,149 @@ fun FollowersScreen(
     popBackStack: () -> Unit,
     viewModel: FollowersScreenViewModel = hiltViewModel(),
 ){
-    
+    val followersPagingItems = viewModel.getFollowers(username).collectAsLazyPagingItems()
     val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsState()
-    val followersList by viewModel.followers.collectAsState()
-
-    var page by remember { mutableIntStateOf(1) }
-    var isLoading by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        delay(100L)
-        viewModel.getUserFollowers(
-            page = page,
-            username = username
-        )
-    }
-
     val lazyListState = rememberLazyListState()
+
+    var isRefreshingState by remember { mutableStateOf(false) }
+    val refreshState = rememberPullToRefreshState()
+    val coroutineScope = rememberCoroutineScope()
+
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-
-    val layoutInfo by remember { derivedStateOf { lazyListState.layoutInfo } }
-    val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-    val itemCount = layoutInfo.totalItemsCount
-
-    if (uiState == UiState.Loading && followersList.isEmpty()) {
-        ShimmerUserList()
-    } else {
-        Scaffold (
-            topBar =  {
-                TopAppBar(
-                    title = {
-                        Text(text = username)
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { popBackStack() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.back)
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = colorResource(R.color.light_grey),
-                        scrolledContainerColor = colorResource(R.color.light_grey)
-                    ),
-                    scrollBehavior = scrollBehavior
-                )
-            },
-            content = { paddingValues ->
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(color = colorResource(R.color.light_grey))
-                        .padding(top = paddingValues.calculateTopPadding() + 8.dp)
-                        .nestedScroll(scrollBehavior.nestedScrollConnection),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    state = lazyListState
-                ) {
-                    items(followersList) { user ->
-                        UserCard(
-                            login = user.login,
-                            avatarUrl = user.avatar_url,
-                            followers = user.followers,
-                            onClick = {
-                                navigateToFollowers(user.login)
-                            }
+    Scaffold (
+        topBar =  {
+            TopAppBar(
+                title = {
+                    Text(text = username)
+                },
+                navigationIcon = {
+                    IconButton(onClick = { popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colorResource(R.color.light_grey),
+                    scrolledContainerColor = colorResource(R.color.light_grey)
+                ),
+                scrollBehavior = scrollBehavior
+            )
+        },
+        content = { paddingValues ->
+            PullToRefreshBox(
+                modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
+                state = refreshState,
+                isRefreshing = isRefreshingState,
+                onRefresh = {
+                    isRefreshingState = true
+                    coroutineScope.launch {
+                        delay(200)
+                        followersPagingItems.refresh() //RETRY отрабатывает только при state ERROR
+                        isRefreshingState = false
+                    }
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(color = colorResource(R.color.light_grey)),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
 
-                    item {
-                        if (uiState == UiState.Loading) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(40.dp),
-                                contentAlignment = Alignment.BottomCenter
-                            ) {
-                                CircularProgressIndicator()
+                    LazyColumn(
+                        modifier = Modifier
+                            .background(color = colorResource(R.color.light_grey))
+                            .nestedScroll(scrollBehavior.nestedScrollConnection)
+                            .weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        state = lazyListState
+                    ) {
+                        items(followersPagingItems.itemCount) { index ->
+                            val user = followersPagingItems[index]
+                            user?.let {
+                                UserCard(
+                                    login = user.login,
+                                    avatarUrl = user.avatar_url,
+                                    followers = user.followers,
+                                    onClick = {
+                                        navigateToFollowers(user.login)
+                                    }
+                                )
                             }
                         }
                     }
+                    followersPagingItems.apply {
+                        when (loadState.append) {
+                            is LoadState.Loading -> {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp),
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.more_users_loading),
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    )
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .padding(end = 8.dp)
+                                    )
+                                }
+                            }
+
+                            is LoadState.Error -> {
+                                val error = followersPagingItems.loadState.append as LoadState.Error
+                                Row(modifier = Modifier.padding(top = 4.dp)) {
+                                    Text(
+                                        text = stringResource(R.string.connection_failed),
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+
+                                    Spacer(modifier = Modifier.padding(start = 16.dp))
+
+                                    Button(
+                                        onClick = { followersPagingItems.retry() }
+                                    ) {
+                                        Text(stringResource(R.string.retry))
+                                    }
+                                }
+                                Toast.makeText(
+                                    context,
+                                    error.error.localizedMessage,
+                                    Toast.LENGTH_LONG
+                                )
+                                    .show()
+                            }
+
+                            is LoadState.NotLoading -> {}
+                        }
+                    }
                 }
+
             }
-        )
-    }
 
-    LaunchedEffect(key1 = lastVisibleIndex) {
-        if (lastVisibleIndex == itemCount - 1 && uiState != UiState.Loading) {
-            isLoading = true
-            page += 1
-
-            viewModel.getUserFollowers(
-                page = page,
-                username = username
-            )
-            isLoading = false
-        }
-    }
-
-    if (uiState is UiState.Error) {
-        val error = (uiState as UiState.Error).error
-
-        when (error) {
-            is AppError.Internet -> {
-                Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG)
-                    .show()
-                LaunchedEffect(Unit){
-                    viewModel.clearToken()
+            when (followersPagingItems.loadState.refresh) {
+                is LoadState.Loading -> {
+                    ShimmerUserList(modifier = Modifier
+                        .padding(top = paddingValues.calculateTopPadding()))
                 }
-                navigateIfError()
-            }
-
-            is AppError.System -> {
-                ErrorScreen()
+                is LoadState.Error -> {
+                    if (!CheckConnection.isInternetAvailable(context)) {
+                        ErrorScreen(
+                            reload = { followersPagingItems.retry() },
+                            logOut = { navigateIfError() }
+                        )
+                        Toast.makeText(context, stringResource(R.string.token_error), Toast.LENGTH_LONG).show()
+                    } else {
+                        followersPagingItems.retry()
+                    }
+                }
+                else -> {}
             }
         }
-    }
+    )
 }

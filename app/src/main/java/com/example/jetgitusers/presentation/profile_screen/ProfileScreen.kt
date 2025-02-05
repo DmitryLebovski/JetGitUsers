@@ -78,7 +78,10 @@ fun ProfileScreen(
 
                 is AppError.System -> {
                     if (!CheckConnection.isInternetAvailable(context)) {
-                        ErrorScreen()
+                        ErrorScreen(
+                            reload = { viewModel.getUserData() },
+                            logOut = { navigateIfError() }
+                        )
                     } else {
                         viewModel.getUserData()
                     }

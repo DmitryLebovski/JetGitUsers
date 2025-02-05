@@ -180,6 +180,8 @@ fun LoadingScreen() {
 @Composable
 fun ErrorScreen(
     modifier: Modifier = Modifier,
+    reload: () -> Unit,
+    logOut: () -> Unit
 ) {
     Column (
         modifier = modifier.fillMaxSize(),
@@ -194,5 +196,8 @@ fun ErrorScreen(
             text = stringResource(id = R.string.connection_failed),
             modifier = Modifier.padding(16.dp)
         )
+
+        Button(onClick = reload) { Text(text = stringResource(id = R.string.retry)) }
+        Button(onClick = logOut) { Text(text = stringResource(id = R.string.log_out)) }
     }
 }
